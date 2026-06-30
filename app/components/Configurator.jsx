@@ -194,17 +194,22 @@ export default function Configurator() {
     if (downloading) return;
     setDownloading(true);
     try {
+      const body = mode === 'capex'
+        ? { mode: 'capex', capexSelected: [...capexSelected], taxState }
+        : { tier, selected: selectedIds, taxState };
       const res = await fetch('/api/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier, selected: selectedIds, taxState }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error('pdf failed');
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Refresh-${cfgName.replace(/[^a-z0-9]+/gi, '-')}.pdf`;
+      a.download = mode === 'capex'
+        ? 'Sherpa-Purchase.pdf'
+        : `Refresh-${cfgName.replace(/[^a-z0-9]+/gi, '-')}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();

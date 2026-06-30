@@ -48,21 +48,24 @@ const HEAD = FONTS_OK ? 'Poppins' : 'Helvetica-Bold';
 const BODY = FONTS_OK ? 'Roboto' : 'Helvetica';
 
 const styles = StyleSheet.create({
-  page: { paddingTop: 34, paddingBottom: 30, paddingHorizontal: 40, fontSize: 10, color: NAVY, fontFamily: BODY },
-  band: { backgroundColor: NAVY, borderRadius: 12, paddingVertical: 16, paddingHorizontal: 22, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  page: { paddingTop: 34, paddingBottom: 28, paddingHorizontal: 40, fontSize: 10, color: NAVY, fontFamily: BODY, display: 'flex', flexDirection: 'column' },
+  band: { backgroundColor: NAVY, borderRadius: 12, paddingVertical: 16, paddingHorizontal: 22, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   logo: { height: 24, width: 80, objectFit: 'contain' },
   brand: { color: '#fff', fontSize: 17, fontFamily: HEAD, fontWeight: 700 },
   brandBots: { color: CYAN },
+  bandRight: { alignItems: 'flex-end' },
   bandTag: { color: '#9fc4cf', fontSize: 8, letterSpacing: 1.5, fontFamily: BODY, fontWeight: 500 },
+  bandSub: { color: '#6f95a0', fontSize: 7, fontFamily: BODY, marginTop: 3 },
+  accentRule: { height: 3, backgroundColor: CYAN, borderRadius: 2, marginBottom: 20, width: 54 },
 
   hero: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
   eyebrow: { color: CYAN_DK, fontSize: 8, letterSpacing: 1.2, marginBottom: 5, fontFamily: BODY, fontWeight: 500 },
   cfgName: { fontSize: 24, fontFamily: HEAD, fontWeight: 700, color: NAVY, lineHeight: 1 },
   cfgSub: { fontSize: 9, color: GREY, marginTop: 5, fontFamily: BODY },
-  priceWrap: { alignItems: 'flex-end' },
-  priceLabel: { fontSize: 7.5, color: GREY, letterSpacing: 0.8, marginBottom: 2, fontFamily: BODY, fontWeight: 500 },
+  priceWrap: { alignItems: 'flex-end', minWidth: 150 },
+  priceLabel: { fontSize: 7.5, color: GREY, letterSpacing: 0.8, marginBottom: 5, fontFamily: BODY, fontWeight: 500 },
   bigPrice: { fontSize: 32, fontFamily: HEAD, fontWeight: 700, color: NAVY, lineHeight: 1 },
-  preTax: { fontSize: 8.5, color: GREY, marginTop: 3, fontFamily: BODY },
+  preTax: { fontSize: 8.5, color: GREY, marginTop: 4, fontFamily: BODY },
 
   contact: { flexDirection: 'row', backgroundColor: PAPER, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 16, gap: 22 },
   contactItem: { flexDirection: 'column' },
@@ -94,12 +97,13 @@ const styles = StyleSheet.create({
   grandVal: { fontSize: 19, color: '#fff', fontFamily: HEAD, fontWeight: 700 },
   goldAccent: { color: GOLD },
 
-  contactBar: { position: 'absolute', bottom: 84, left: 40, right: 40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#f0fbfd', borderWidth: 1, borderColor: '#cdeef4', borderRadius: 8, paddingVertical: 9, paddingHorizontal: 14 },
+  spacer: { flexGrow: 1, minHeight: 16 },
+  contactBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#f0fbfd', borderWidth: 1, borderColor: '#cdeef4', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 14, marginTop: 18 },
   contactBarLabel: { fontSize: 8.5, color: NAVY, fontFamily: HEAD, fontWeight: 600 },
   contactBarText: { fontSize: 9, color: NAVY, fontFamily: BODY, fontWeight: 500 },
   contactBarDot: { fontSize: 9, color: CYAN_DK, fontFamily: BODY },
 
-  footer: { position: 'absolute', bottom: 24, left: 40, right: 40, borderTopWidth: 0.7, borderTopColor: LINE, paddingTop: 9, fontSize: 7, color: GREY, lineHeight: 1.5, fontFamily: BODY },
+  footer: { borderTopWidth: 0.7, borderTopColor: LINE, paddingTop: 9, marginTop: 12, fontSize: 7, color: GREY, lineHeight: 1.5, fontFamily: BODY },
 });
 
 function CapexDoc({ data }) {
@@ -121,11 +125,15 @@ function CapexDoc({ data }) {
           {LOGO_DATA_URI
             ? <Image src={LOGO_DATA_URI} style={styles.logo} />
             : <Text style={styles.brand}>LUCID<Text style={styles.brandBots}>BOTS</Text></Text>}
-          <Text style={styles.bandTag}>SHERPA PURCHASE SUMMARY</Text>
+          <View style={styles.bandRight}>
+            <Text style={styles.bandTag}>SHERPA PURCHASE SUMMARY</Text>
+            <Text style={styles.bandSub}>Soft-washing power in the sky · Charlotte, NC</Text>
+          </View>
         </View>
+        <View style={styles.accentRule} />
 
         <View style={styles.hero}>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, paddingRight: 18 }}>
             <Text style={styles.eyebrow}>YOUR CONFIGURATION</Text>
             <Text style={styles.cfgName}>Sherpa Purchase</Text>
             <Text style={styles.cfgSub}>One-time purchase  ·  own it outright</Text>
@@ -209,6 +217,8 @@ function CapexDoc({ data }) {
             <Text style={styles.grandVal}>${fmt(bigNum)}</Text>
           </View>
         </View>
+
+        <View style={styles.spacer} />
 
         {!contact ? (
           <View style={styles.contactBar}>
