@@ -37,6 +37,19 @@
   .rig-card-link svg{width:14px;height:14px}
   @media(max-width:900px){.rigs-info-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:520px){.rigs-info-grid{grid-template-columns:1fr}}
+
+  /* Navy footer band, bookends the header and gives the page breathing room */
+  .site-footer{background:var(--navy);margin-top:56px;padding:34px 40px 26px}
+  .site-footer-inner{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+  .sf-left{display:flex;flex-direction:column;gap:8px}
+  .sf-logo img{height:26px;width:auto;object-fit:contain;display:block}
+  .sf-tag{color:#9fc4cf;font-family:'Roboto';font-size:13px;margin:0}
+  .sf-contact{display:flex;gap:12px;flex-wrap:wrap}
+  .sf-link{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:9px;padding:9px 14px;color:#fff;text-decoration:none;font-family:'Roboto';font-weight:500;font-size:13.5px;transition:background .15s}
+  .sf-link:hover{background:rgba(255,255,255,.16)}
+  .sf-link svg{width:15px;height:15px;color:var(--cyan)}
+  .sf-base{max-width:1180px;margin:22px auto 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.12);color:#7da3ae;font-family:'Roboto';font-size:11.5px}
+  @media(max-width:600px){.site-footer-inner{flex-direction:column;align-items:flex-start}}
   .hdr-tag{font-family:'Poppins';font-weight:600;font-size:15px;color:#fff;letter-spacing:.01em}
   .hdr-contact{display:flex;align-items:center;gap:10px}
   .hdr-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);color:#fff;font-family:'Inter';font-weight:500;font-size:13px;padding:8px 14px;border-radius:9px;text-decoration:none;transition:background .15s,border-color .15s}

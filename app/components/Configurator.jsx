@@ -8,6 +8,7 @@ import {
 } from '../lib/data';
 import CapexBody from './CapexBody';
 import RigsInfo from './RigsInfo';
+import SiteFooter from './SiteFooter';
 
 const LOGO_SRC = '/lucidbots-white.png';
 
@@ -558,6 +559,8 @@ export default function Configurator() {
       </div>
       </>
       )}
+
+      <SiteFooter />
 
       {/* Compare modal */}
       {showCompare && (
