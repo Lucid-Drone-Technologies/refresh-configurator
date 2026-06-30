@@ -4,7 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   TIERS, ITEMS, GROUPS, itemById, STATE_NAMES, STATE_TAX,
   fmt, computeTotal, cashTotal, financeTotal, configName, taxRateFor, TERM,
+  CAPEX_ITEMS, capexItemById, capexTotal,
 } from '../lib/data';
+import CapexBody from './CapexBody';
+import RigsInfo from './RigsInfo';
+import SiteFooter from './SiteFooter';
 
 const LOGO_SRC = '/lucidbots-white.png';
 
@@ -16,6 +20,44 @@ const PLAN_TO_HS = { 'Base Camp': 'base_camp', Ascent: 'ascent', Summit: 'summit
 
 // Posts the configuration to HubSpot via the Forms API, from the browser so the
 // hubspotutk cookie (gclid/UTM attribution) is included. Best-effort: never blocks the lead.
+// Lightweight CapEx version: creates/finds the contact (with ad attribution via
+// the hubspotutk cookie) but writes no custom fields. Best-effort, never blocks.
+async function submitCapexContact({ name, email, phone }) {
+  try {
+    const hutk = (typeof document !== 'undefined' ? document.cookie : '')
+      .split('; ')
+      .find((r) => r.startsWith('hubspotutk='))?.split('=')[1] || '';
+    const parts = String(name).trim().split(/\s+/);
+    const firstName = parts.shift() || '';
+    const lastName = parts.join(' ');
+    const payload = {
+      fields: [
+        { name: 'firstname', value: firstName },
+        { name: 'lastname', value: lastName },
+        { name: 'email', value: email },
+        { name: 'phone', value: phone },
+      ],
+      context: {
+        ...(hutk ? { hutk } : {}),
+        pageUri: 'https://pricing.lucidbots.com/',
+        pageName: 'Lucid Bots CapEx Pricing Configurator',
+      },
+    };
+    const res = await fetch(HS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      console.error('HubSpot capex contact submit failed:', res.status, await res.text());
+    }
+  } catch (err) {
+    console.error('HubSpot capex contact submit error:', err);
+  }
+}
+
+// Posts the full Refresh configuration to HubSpot via the Forms API, from the
+// browser so the hubspotutk cookie (gclid/UTM attribution) is included.
 async function submitToHubSpot({ name, email, phone, planName, addonNames, monthlyTotal }) {
   try {
     const hutk = (typeof document !== 'undefined' ? document.cookie : '')
@@ -57,6 +99,8 @@ async function submitToHubSpot({ name, email, phone, planName, addonNames, month
 }
 
 export default function Configurator() {
+  const [mode, setMode] = useState('refresh'); // 'refresh' | 'capex'
+  const [capexSelected, setCapexSelected] = useState(() => new Set());
   const [tier, setTier] = useState('base');
   const [selected, setSelected] = useState(() => new Set(TIERS.base.items));
   const [taxState, setTaxState] = useState('');
@@ -112,6 +156,14 @@ export default function Configurator() {
     doFlash();
   };
 
+  const toggleCapex = (id) => {
+    setCapexSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   const cfgName = configName(tier, selectedIds);
   const refresh24 = total * TERM;
   const cash = cashTotal(selectedIds);
@@ -142,17 +194,22 @@ export default function Configurator() {
     if (downloading) return;
     setDownloading(true);
     try {
+      const body = mode === 'capex'
+        ? { mode: 'capex', capexSelected: [...capexSelected], taxState }
+        : { tier, selected: selectedIds, taxState };
       const res = await fetch('/api/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier, selected: selectedIds, taxState }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error('pdf failed');
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Refresh-${cfgName.replace(/[^a-z0-9]+/gi, '-')}.pdf`;
+      a.download = mode === 'capex'
+        ? 'Sherpa-Purchase.pdf'
+        : `Refresh-${cfgName.replace(/[^a-z0-9]+/gi, '-')}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -197,6 +254,45 @@ export default function Configurator() {
 
     setSubmitting(true);
     try {
+      if (mode === 'capex') {
+        const capexIds = [...capexSelected];
+        const res = await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: form.name.trim(),
+            email: form.email.trim(),
+            phone: form.phone.trim(),
+            mode: 'capex',
+            capexSelected: capexIds,
+            taxState,
+            company_website: honeypot,
+            elapsedMs: sendOpenedAt ? Date.now() - sendOpenedAt : 9999,
+          }),
+        });
+        if (!res.ok) throw new Error('submit failed');
+        const capexAddons = capexIds.map((id) => capexItemById[id]?.name).filter(Boolean);
+        // Create/find the contact in HubSpot (basic fields + ad attribution).
+        // No custom field writeback for CapEx yet — just get the lead into the CRM.
+        submitCapexContact({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+        });
+        // Conversion event (separate from Refresh so marketing can measure it on its own).
+        if (typeof window !== 'undefined') {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+            event: 'capex_configure',
+            addons: capexAddons,
+            total_purchase: capexTotal(capexIds),
+          });
+        }
+        setShowSend(false);
+        setShowSent(true);
+        return;
+      }
+
       const res = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -259,7 +355,20 @@ export default function Configurator() {
           <img alt="Lucid Bots" src={LOGO_SRC} />
         </a>
         <div className="hdr-right">
-          <div className="hdr-tag">Refresh · Build Your Subscription</div>
+          <div className="mode-toggle" role="tablist" aria-label="Pricing mode">
+            <button
+              role="tab"
+              aria-selected={mode === 'refresh'}
+              className={`mode-btn ${mode === 'refresh' ? 'mode-on' : ''}`}
+              onClick={() => setMode('refresh')}
+            >Refresh</button>
+            <button
+              role="tab"
+              aria-selected={mode === 'capex'}
+              className={`mode-btn ${mode === 'capex' ? 'mode-on' : ''}`}
+              onClick={() => setMode('capex')}
+            >CapEx</button>
+          </div>
           <div className="hdr-contact">
             <a className="hdr-btn" href="tel:+17049993356">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
@@ -273,6 +382,19 @@ export default function Configurator() {
         </div>
       </header>
 
+      {mode === 'capex' && (
+        <CapexBody
+          selected={capexSelected}
+          toggle={toggleCapex}
+          taxState={taxState}
+          setTaxState={setTaxState}
+          onInfo={setInfoItem}
+          onLockIn={openSend}
+        />
+      )}
+
+      {mode === 'refresh' && (
+      <>
       <div className="wrap">
         <div className="hero">
           <h1>Start earning with a Sherpa. <em>$0 down.</em></h1>
@@ -472,6 +594,8 @@ export default function Configurator() {
             </div>
           </div>
         </div>
+
+        <RigsInfo />
       </div>
 
       {/* Mobile sticky bar */}
@@ -482,6 +606,10 @@ export default function Configurator() {
         </div>
         <button onClick={openSend}>Lock it in</button>
       </div>
+      </>
+      )}
+
+      <SiteFooter />
 
       {/* Compare modal */}
       {showCompare && (
@@ -509,7 +637,14 @@ export default function Configurator() {
       )}
 
       {/* Info modal */}
-      {infoItem && (
+      {infoItem && (() => {
+        // For items that exist in Refresh (shared id), always show the Refresh
+        // info text + photo so carryover items look identical on both pages.
+        const refreshItem = itemById[infoItem.id];
+        const displayInfo = (refreshItem && refreshItem.info) ? refreshItem.info : infoItem.info;
+        const capexItem = capexItemById[infoItem.id];
+        const inCapex = mode === 'capex';
+        return (
         <div className="modal-bg show" onClick={(e) => { if (e.target.classList.contains('modal-bg')) setInfoItem(null); }}>
           <div className="modal modal-sm">
             <button className="modal-close" aria-label="Close" onClick={() => setInfoItem(null)}>&times;</button>
@@ -523,15 +658,22 @@ export default function Configurator() {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
               onLoad={(e) => { e.currentTarget.style.display = 'block'; }}
             />
-            <span className="eyebrow">What you&apos;re adding</span>
+            <span className="eyebrow">{inCapex ? 'About this item' : 'What you\u2019re adding'}</span>
             <h3>{infoItem.name}</h3>
-            <p style={{ color: 'var(--grey)', fontSize: '14.5px', lineHeight: 1.6, margin: '10px 0 16px' }}>{infoItem.info}</p>
+            <p style={{ color: 'var(--grey)', fontSize: '14.5px', lineHeight: 1.6, margin: '10px 0 16px' }}>{displayInfo}</p>
             <div style={{ background: '#f0fbfd', border: '1px solid #cdeef4', borderRadius: 10, padding: '12px 16px', fontSize: '13.5px', color: 'var(--navy)' }}>
-              {infoItem.included ? 'Included free on every Refresh subscription' : <><b>${fmt(infoItem.mo)}/mo</b> on Refresh · vs {infoItem.cash} to buy</>}
+              {inCapex
+                ? (capexItem?.core
+                    ? <><b>${fmt(capexItem.price)}</b> · the foundation of every purchase build</>
+                    : capexItem?.suite
+                      ? <><b>${fmt(capexItem.priceUp)}</b> up front · or ${fmt(capexItem.priceMo)}/mo</>
+                      : <><b>${fmt(capexItem?.price || 0)}</b> · one-time purchase</>)
+                : (infoItem.included ? 'Included free on every Refresh subscription' : <><b>${fmt(infoItem.mo)}/mo</b> on Refresh · vs {infoItem.cash} to buy</>)}
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* Send modal */}
       {showSend && (

@@ -18,6 +18,38 @@
   .hdr-logo img{height:46px;width:auto;display:block;cursor:pointer;transition:opacity .15s}
   .hdr-logo img:hover{opacity:.85}
   .hdr-right{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .mode-toggle{display:inline-flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:3px}
+  .mode-btn{appearance:none;border:none;background:transparent;color:#cfe3e8;font-family:'Poppins';font-weight:600;font-size:13px;padding:7px 16px;border-radius:7px;cursor:pointer;transition:background .15s,color .15s}
+  .mode-btn.mode-on{background:var(--cyan);color:var(--navy)}
+  .mode-btn:not(.mode-on):hover{color:#fff}
+
+  /* Informational rigs section (reference material, not part of the build) */
+  .rigs-info{margin-top:40px;padding-top:28px;border-top:1px solid var(--line,#e6ebed)}
+  .rigs-info-head{margin-bottom:16px}
+  .rigs-info-title{font-family:'Poppins';font-weight:700;font-size:20px;color:var(--navy)}
+  .rigs-info-sub{font-family:'Roboto';font-size:14px;color:var(--grey);max-width:640px;margin-top:5px;line-height:1.5}
+  .rigs-info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .rig-card{display:flex;flex-direction:column;border:1px solid var(--line,#e6ebed);border-radius:12px;padding:14px;background:#fafbfc;text-decoration:none;transition:border-color .15s,box-shadow .15s}
+  .rig-card:hover{border-color:var(--cyan);box-shadow:0 2px 10px rgba(20,41,51,.06)}
+  .rig-card-name{font-family:'Poppins';font-weight:600;font-size:14px;color:var(--navy);margin-bottom:4px}
+  .rig-card-desc{font-family:'Roboto';font-size:12.5px;color:var(--grey);line-height:1.45;flex:1;margin-bottom:10px}
+  .rig-card-link{display:inline-flex;align-items:center;gap:6px;font-family:'Roboto';font-weight:500;font-size:12.5px;color:var(--cyan-dk,#1aa3b8)}
+  .rig-card-link svg{width:14px;height:14px}
+  @media(max-width:900px){.rigs-info-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.rigs-info-grid{grid-template-columns:1fr}}
+
+  /* Navy footer band, bookends the header and gives the page breathing room */
+  .site-footer{background:var(--navy);margin-top:56px;padding:34px 40px 26px}
+  .site-footer-inner{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+  .sf-left{display:flex;flex-direction:column;gap:8px}
+  .sf-logo img{height:26px;width:auto;object-fit:contain;display:block}
+  .sf-tag{color:#9fc4cf;font-family:'Roboto';font-size:13px;margin:0}
+  .sf-contact{display:flex;gap:12px;flex-wrap:wrap}
+  .sf-link{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:9px;padding:9px 14px;color:#fff;text-decoration:none;font-family:'Roboto';font-weight:500;font-size:13.5px;transition:background .15s}
+  .sf-link:hover{background:rgba(255,255,255,.16)}
+  .sf-link svg{width:15px;height:15px;color:var(--cyan)}
+  .sf-base{max-width:1180px;margin:22px auto 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.12);color:#7da3ae;font-family:'Roboto';font-size:11.5px}
+  @media(max-width:600px){.site-footer-inner{flex-direction:column;align-items:flex-start}}
   .hdr-tag{font-family:'Poppins';font-weight:600;font-size:15px;color:#fff;letter-spacing:.01em}
   .hdr-contact{display:flex;align-items:center;gap:10px}
   .hdr-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);color:#fff;font-family:'Inter';font-weight:500;font-size:13px;padding:8px 14px;border-radius:9px;text-decoration:none;transition:background .15s,border-color .15s}

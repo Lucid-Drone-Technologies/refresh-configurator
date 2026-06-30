@@ -1,5 +1,6 @@
 import { generatePdf } from '../../lib/pdf.jsx';
-import { TIERS, itemById, configName } from '../../lib/data';
+import { generateCapexPdf } from '../../lib/capexPdf.jsx';
+import { TIERS, itemById, configName, capexItemById } from '../../lib/data';
 import { rateLimit, clientIp } from '../../lib/guard';
 
 export const runtime = 'nodejs';
@@ -13,6 +14,24 @@ export async function POST(req) {
     }
 
     const body = await req.json();
+
+    // CapEx (outright purchase) download
+    if (body && body.mode === 'capex') {
+      const { capexSelected, taxState } = body;
+      if (!Array.isArray(capexSelected)) {
+        return Response.json({ error: 'Invalid configuration.' }, { status: 400 });
+      }
+      const validCapex = capexSelected.filter((id) => capexItemById[id] && !capexItemById[id].core);
+      const pdfBuffer = await generateCapexPdf({ selected: validCapex, taxState, contact: null });
+      return new Response(pdfBuffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': 'attachment; filename="Sherpa-Purchase.pdf"',
+        },
+      });
+    }
+
     const { tier, selected, taxState } = body || {};
 
     if (!tier || !TIERS[tier] || !Array.isArray(selected)) {

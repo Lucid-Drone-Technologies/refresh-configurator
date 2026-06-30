@@ -1,8 +1,9 @@
 import { Resend } from 'resend';
 import { generatePdf } from '../../lib/pdf.jsx';
+import { generateCapexPdf } from '../../lib/capexPdf.jsx';
 import {
   TIERS, ITEMS, itemById, fmt, computeTotal, configName,
-  taxRateFor, STATE_NAMES,
+  taxRateFor, STATE_NAMES, CAPEX_ITEMS, capexItemById, capexTotal,
 } from '../../lib/data';
 import { rateLimit, clientIp, looksLikeBot } from '../../lib/guard';
 
@@ -23,6 +24,79 @@ export async function POST(req) {
 
     // Honeypot / too-fast check — silently accept so bots don't learn, but do nothing
     if (looksLikeBot(body)) {
+      return Response.json({ ok: true });
+    }
+
+    // ---- CapEx (outright purchase) submission ----
+    if (body && body.mode === 'capex') {
+      const { name, email, phone, capexSelected, taxState } = body;
+      if (!name || !email || !phone || !Array.isArray(capexSelected)) {
+        return Response.json({ error: 'Missing or invalid fields.' }, { status: 400 });
+      }
+      const emailOkC = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
+      if (!emailOkC) return Response.json({ error: 'Invalid email.' }, { status: 400 });
+
+      const validCapex = capexSelected.filter((id) => capexItemById[id] && !capexItemById[id].core);
+      const cTotal = capexTotal(validCapex);
+      const cRate = taxRateFor(taxState);
+      const cWithTax = Math.round(cTotal * (1 + cRate));
+      const cStateName = taxState && STATE_NAMES[taxState] ? STATE_NAMES[taxState] : 'Not selected';
+      const cEstLine = taxState
+        ? (cRate > 0
+            ? `$${fmt(cWithTax)} (${(cRate * 100).toFixed(3).replace(/\.?0+$/, '')}% ${taxState} state rate, local taxes not included)`
+            : 'No state sales tax')
+        : 'Not selected';
+
+      const cContact = { name: String(name).trim(), email: String(email).trim(), phone: String(phone).trim() };
+      const cPdf = await generateCapexPdf({ selected: validCapex, taxState, contact: cContact });
+
+      // Line items: core drone always, then selected add-ons
+      const coreItem = CAPEX_ITEMS.find((it) => it.core);
+      const lineRows = [coreItem, ...CAPEX_ITEMS.filter((it) => validCapex.includes(it.id))]
+        .map((it) => {
+          const p = it.suite ? it.priceUp : it.price;
+          return `<li>${it.name} — $${fmt(p)}${it.suite ? ' (or $' + fmt(it.priceMo) + '/mo)' : ''}</li>`;
+        }).join('');
+
+      const cHtml = `
+        <div style="font-family:Arial,Helvetica,sans-serif;color:#142933;max-width:560px">
+          <div style="background:#142933;border-radius:10px;padding:16px 20px;margin-bottom:18px">
+            <span style="color:#fff;font-size:17px;font-weight:bold">LUCID<span style="color:#23c0d8">BOTS</span></span>
+            <span style="color:#9fc4cf;font-size:11px;letter-spacing:1px;float:right;margin-top:4px">NEW PURCHASE BUILD</span>
+          </div>
+          <h2 style="margin:0 0 2px">Sherpa Purchase</h2>
+          <p style="color:#606060;margin:0 0 18px">$${fmt(cTotal)} one-time, before tax</p>
+
+          <h3 style="margin:0 0 6px;font-size:13px;color:#1aa3b8;text-transform:uppercase;letter-spacing:1px">Contact</h3>
+          <table style="font-size:14px;margin-bottom:18px">
+            <tr><td style="padding:2px 16px 2px 0;color:#606060">Name</td><td><b>${cContact.name}</b></td></tr>
+            <tr><td style="padding:2px 16px 2px 0;color:#606060">Email</td><td><a href="mailto:${cContact.email}">${cContact.email}</a></td></tr>
+            <tr><td style="padding:2px 16px 2px 0;color:#606060">Phone</td><td>${cContact.phone}</td></tr>
+          </table>
+
+          <h3 style="margin:0 0 6px;font-size:13px;color:#1aa3b8;text-transform:uppercase;letter-spacing:1px">Purchase configuration</h3>
+          <table style="font-size:14px;margin-bottom:6px">
+            <tr><td style="padding:2px 16px 2px 0;color:#606060">One-time total (before tax)</td><td>$${fmt(cTotal)}</td></tr>
+            <tr><td style="padding:2px 16px 2px 0;color:#606060">Customer state</td><td>${cStateName}</td></tr>
+            <tr><td style="padding:2px 16px 2px 0;color:#606060">Est. with tax</td><td>${cEstLine}</td></tr>
+          </table>
+          <ul style="font-size:14px;margin:6px 0 18px">${lineRows}</ul>
+          <p style="font-size:12px;color:#606060">The full purchase summary is attached as a PDF.</p>
+        </div>`;
+
+      const resendC = new Resend(process.env.RESEND_API_KEY);
+      const { error: cErr } = await resendC.emails.send({
+        from: FROM,
+        to: TO,
+        replyTo: cContact.email,
+        subject: `New Purchase build: ${cContact.name} — Sherpa ($${fmt(cTotal)})`,
+        html: cHtml,
+        attachments: [{ filename: `Sherpa-Purchase-${cContact.name.replace(/[^a-z0-9]+/gi, '-')}.pdf`, content: cPdf }],
+      });
+      if (cErr) {
+        console.error('Resend error (capex):', cErr);
+        return Response.json({ error: 'Email failed to send.' }, { status: 502 });
+      }
       return Response.json({ ok: true });
     }
 
