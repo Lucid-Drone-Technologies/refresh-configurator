@@ -45,67 +45,67 @@ export const CAPEX_SECTIONS = [
     key: 'foundation', label: 'The Sherpa Drone', sub: 'Your foundation',
     items: [
       { id: 'flight', name: 'The Sherpa Drone', price: 45750, core: true,
-        desc: 'The complete standard package: Sherpa aircraft, flight batteries, chargers, cases, and field accessories.' },
+        desc: 'Aircraft, batteries, chargers, cases, and field kit.', info: 'The complete standard package and the foundation of every build: the Sherpa aircraft, flight batteries, chargers, cases, and field accessories. Everything you need to fly, owned outright.' },
     ],
   },
   {
-    key: 'payload', label: 'Choose Your Payload', sub: 'Pick one (or both)',
+    key: 'payload', label: 'Choose Your Payload', sub: 'Pick one or both',
     items: [
       { id: 'window', name: 'Window Washing Payload', price: 11500,
-        desc: 'Purpose-built spray system for soft-washing windows, glass, and building exteriors at height. Streak-free results without lifts or rope crews.' },
+        desc: 'Soft-wash windows, glass, and building exteriors at height.', info: 'A purpose-built spray system for soft-washing windows, glass, and building exteriors at height. Streak-free results without lifts or rope crews, so a one-pilot crew covers far more square footage per day.' },
       { id: 'shield', name: 'Shield Payload (Concrete Sealing)', price: 15000,
-        desc: 'Applies protective sealant to large concrete surfaces fast, turning slow, labor-heavy sealing work into a one-pilot job.' },
+        desc: 'Apply protective sealant to large concrete surfaces fast.', info: 'Our concrete-sealing payload applies protective sealant to large concrete surfaces fast, turning slow, labor-heavy sealing work into a one-pilot job, and opening up the highest-ticket jobs in the industry.' },
     ],
   },
   {
     key: 'tether', label: 'Add the Power Tether', sub: 'Optional add-on',
     items: [
       { id: 'tether', name: 'Power Tether', price: 19800,
-        desc: 'Continuous ground power for virtually unlimited flight time, no battery swaps mid-job. Ideal for large facilities and long production days where uptime is money.' },
+        desc: 'Continuous ground power for virtually unlimited flight time.', info: 'Continuous ground power for virtually unlimited flight time, with no battery swaps mid-job. Ideal for large facilities and long production days where uptime is money.' },
     ],
   },
   {
     key: 'support', label: 'Lucid Suite Support Package', sub: 'Optional add-on',
     items: [
       { id: 'suite', name: 'Lucid Suite Support Package', suite: true, priceUp: 12000, priceMo: 500,
-        desc: 'Ongoing support, coverage, and resources to keep your drone flying and your business growing.' },
+        desc: 'Ongoing support and coverage to keep you flying.', info: 'Ongoing support, coverage, and resources to keep your drone flying and your business growing. Available at $12,000 up front or $500/mo, your rep can walk through which fits best.' },
     ],
   },
   {
-    key: 'training', label: 'Get Your Team Trained', sub: 'Optional — choose any',
+    key: 'training', label: 'Get Your Team Trained', sub: 'Optional, choose any',
     items: [
       { id: 'train3', name: '3-Day Training', price: 3000,
-        desc: 'Exterior Cleaning 101: three days of in-person training at our Charlotte, NC HQ.' },
+        desc: 'Three days of in-person training at our Charlotte HQ.', info: 'Exterior Cleaning 101: three days of hands-on, in-person training at our Charlotte, NC headquarters to get your crew confident and operating.' },
       { id: 'ojt', name: 'First Job Consultation', price: 5000,
-        desc: 'Our team comes to you, advising your first jobs and coaching your crew through every step in the field.' },
+        desc: 'Our team coaches your crew through your first jobs on site.', info: 'Our team comes to you, advising on your first jobs and coaching your crew through every step in the field so revenue starts right away.' },
       { id: 'train1', name: '1-Day HQ Training', price: 1500,
-        desc: 'One day in person at our Charlotte HQ for 1-2 pilots. Bringing 3+ pilots? It is $2,500 and expands to two days.' },
+        desc: 'One day in person at our Charlotte HQ for one or two pilots.', info: 'One day in person at our Charlotte HQ for one or two pilots. Bringing three or more pilots? It expands to two days at $2,500.' },
     ],
   },
   {
     key: 'marketing', label: 'Marketing Package', sub: 'Optional add-on',
     items: [
       { id: 'mktg', name: 'Marketing Package', price: 10000,
-        desc: 'Launch loud. Done-for-you marketing assets and strategy to win drone-cleaning work from day one.' },
+        desc: 'Done-for-you marketing assets and strategy from day one.', info: 'Done-for-you marketing assets and strategy to win drone-cleaning work from day one, so you launch with a brand and a pipeline instead of building from scratch.' },
     ],
   },
   {
     key: 'ndaa', label: 'NDAA-Compliant Build', sub: 'Optional add-on',
     items: [
       { id: 'ndaa', name: 'NDAA-Compliant Build', price: 11040,
-        desc: 'Built to NDAA-compliant specifications for federal, defense, and public-sector work.' },
+        desc: 'Configured to NDAA standards for federal and public-sector work.', info: 'Configures your Sherpa to meet the component and sourcing rules of the National Defense Authorization Act, the federal standard that bars drones with Chinese-made critical parts. Qualifies your aircraft for government, defense, and publicly funded work. (Sherpa is already U.S.-made in Charlotte, NC.)' },
     ],
   },
-  {
-    key: 'rigs', label: 'Need a Rig?', sub: 'Choose your cleaning setup',
-    infoOnly: true,
-    items: [
-      { id: 'van', name: 'Van Skid', infoOnly: true, desc: 'Drop-in skid system for your cargo van.', href: 'https://www.lucidbots.com' },
-      { id: 'enclosed', name: 'Enclosed Trailer', infoOnly: true, desc: 'Fully enclosed, trailer included.', href: 'https://www.lucidbots.com' },
-      { id: 'open', name: 'Open Trailer', infoOnly: true, desc: 'Open-deck platform, trailer included.', href: 'https://www.lucidbots.com' },
-      { id: 'truckbed', name: 'Truck Bed Skid', infoOnly: true, desc: 'Built for a long truck bed.', href: 'https://www.lucidbots.com' },
-    ],
-  },
+];
+
+// Rigs are reference material, NOT part of the builder. Shown as an
+// informational section on both the Refresh and CapEx pages, each linking to a
+// spec PDF. PDFs live in /public/rigs/{id}.pdf (uploaded separately).
+export const RIGS = [
+  { id: 'van',      name: 'Van Skid',        desc: 'Drop-in skid system for your cargo van.',  pdf: '/rigs/van.pdf' },
+  { id: 'enclosed', name: 'Enclosed Trailer', desc: 'Fully enclosed, trailer included.',        pdf: '/rigs/enclosed.pdf' },
+  { id: 'open',     name: 'Open Trailer',     desc: 'Open-deck platform, trailer included.',    pdf: '/rigs/open.pdf' },
+  { id: 'truckbed', name: 'Truck Bed Skid',   desc: 'Built for a long truck bed.',              pdf: '/rigs/truckbed.pdf' },
 ];
 
 // Flat lookup of all priced CapEx items (excludes info-only rigs).

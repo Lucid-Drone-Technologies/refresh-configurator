@@ -1,11 +1,11 @@
 'use client';
 
-import { CAPEX_SECTIONS, capexItemById, capexTotal, fmt, taxRateFor, STATE_NAMES } from '../lib/data';
+import { CAPEX_SECTIONS, capexItemById, capexTotal, fmt, taxRateFor, STATE_NAMES, itemById } from '../lib/data';
+import RigsInfo from './RigsInfo';
 
-// CapEx (outright purchase) view. Mirrors the Sherpa Package one-pager:
-// the drone is the always-included foundation, everything else is an optional
-// add-on, organized by the same categories. Reuses Refresh view classes so the
-// look matches automatically.
+// CapEx (outright purchase) view. Mirrors the Sherpa Package one-pager and the
+// Refresh page's styling. The drone is the always-included foundation; everything
+// else is an optional add-on. Rigs are a separate informational section (RigsInfo).
 export default function CapexBody({ selected, toggle, taxState, setTaxState, onInfo, onLockIn }) {
   const total = capexTotal([...selected]);
   const rate = taxRateFor(taxState);
@@ -18,54 +18,28 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
     <div className="wrap">
       <div className="hero">
         <h1>Own your Sherpa outright. <em>Build your package.</em></h1>
-        <p style={{ color: 'var(--grey)', fontSize: '16px', maxWidth: '620px', marginTop: '10px', lineHeight: 1.5 }}>
-          Prefer to purchase instead of subscribe? Start with the aircraft, then build the
-          package that fits your business. Your total updates as you go.
-        </p>
+        <p>Prefer to purchase instead of subscribe? Start with the aircraft, then build the package that fits your business. Your total updates as you go.</p>
       </div>
 
       <div className="grid">
         <div>
           {CAPEX_SECTIONS.map((section) => {
-            // Info-only section (rigs): reference cards, no price, no selection.
-            if (section.infoOnly) {
-              return (
-                <div key={section.key}>
-                  <div className="addable-label">{section.label}</div>
-                  <div className="ai-sub" style={{ marginTop: '-2px', marginBottom: '12px' }}>{section.sub}</div>
-                  <div className="addable-grid">
-                    {section.items.map((it) => (
-                      <div className="card" key={it.id}>
-                        <div className="top">
-                          <div className="ttl">{it.name}</div>
-                        </div>
-                        <div className="benefit">{it.desc}</div>
-                        <a className="btn-add" href={it.href} target="_blank" rel="noopener noreferrer">View {it.name} →</a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            }
-
             // Foundation (core drone): shown as the included box.
             if (section.key === 'foundation') {
               const core = section.items[0];
+              const coreDesc = itemById[core.id]?.desc || core.desc;
               return (
                 <div className="inc-box" key={section.key}>
-                  <div className="inc-head">
-                    <span className="inc-eyebrow">{section.label} · {section.sub}</span>
-                    <span className="inc-badge">Included</span>
-                  </div>
+                  <div className="inc-eyebrow">{section.label} · {section.sub}</div>
                   <div className="inc-grid">
                     <div className="inc-item">
                       <div className="inc-item-top">
                         <span className="inc-item-name">{core.name}
                           <button className="info-btn" aria-label={`Learn more about ${core.name}`} onClick={() => onInfo(capexItemById[core.id])}>?</button>
                         </span>
-                        <span>${fmt(core.price)}</span>
+                        <span className="inc-item-price">${fmt(core.price)}</span>
                       </div>
-                      <div className="inc-item-desc">{core.desc}</div>
+                      <div className="inc-item-desc">{coreDesc}</div>
                     </div>
                   </div>
                 </div>
@@ -76,20 +50,20 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
             return (
               <div key={section.key}>
                 <div className="addable-label">{section.label}</div>
-                <div className="ai-sub" style={{ marginTop: '-2px', marginBottom: '12px' }}>{section.sub}</div>
                 <div className="addable-grid">
                   {section.items.map((it) => {
                     const on = selected.has(it.id);
-                    const priceLabel = it.suite ? `$${fmt(it.priceUp)} or $${fmt(it.priceMo)}/mo` : `$${fmt(it.price)}`;
+                    const priceLabel = it.suite ? `$${fmt(it.priceUp)}` : `$${fmt(it.price)}`;
+                    const cardDesc = itemById[it.id]?.desc || it.desc;
                     return (
                       <div className={'card' + (on ? ' added' : '')} key={it.id}>
                         <div className="top">
                           <div className="ttl">{it.name}
                             <button className="info-btn" aria-label={`Learn more about ${it.name}`} onClick={() => onInfo(capexItemById[it.id])}>?</button>
                           </div>
-                          <div className="mo">{priceLabel}</div>
+                          <div className="mo">{priceLabel}{it.suite ? <small> or ${fmt(it.priceMo)}/mo</small> : null}</div>
                         </div>
-                        <div className="benefit">{it.desc}</div>
+                        <div className="benefit">{cardDesc}</div>
                         <button className="btn-add" onClick={() => toggle(it.id)}>
                           {on ? (
                             <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>Added · remove</>
@@ -97,11 +71,6 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
                             <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>Add</>
                           )}
                         </button>
-                        {it.suite && on ? (
-                          <div className="benefit" style={{ marginTop: '8px', fontSize: '12.5px', color: 'var(--grey)' }}>
-                            Counted at the ${fmt(it.priceUp)} up-front price in your total. The ${fmt(it.priceMo)}/mo option can be discussed with your rep.
-                          </div>
-                        ) : null}
                       </div>
                     );
                   })}
@@ -146,6 +115,9 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
           </div>
         </div>
       </div>
+
+      {/* Informational rigs section (not part of the build) */}
+      <RigsInfo />
     </div>
   );
 }

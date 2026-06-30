@@ -7,6 +7,7 @@ import {
   CAPEX_ITEMS, capexItemById, capexTotal,
 } from '../lib/data';
 import CapexBody from './CapexBody';
+import RigsInfo from './RigsInfo';
 
 const LOGO_SRC = '/lucidbots-white.png';
 
@@ -316,7 +317,7 @@ export default function Configurator() {
               aria-selected={mode === 'capex'}
               className={`mode-btn ${mode === 'capex' ? 'mode-on' : ''}`}
               onClick={() => setMode('capex')}
-            >Purchase</button>
+            >CapEx</button>
           </div>
           <div className="hdr-contact">
             <a className="hdr-btn" href="tel:+17049993356">
@@ -543,6 +544,8 @@ export default function Configurator() {
             </div>
           </div>
         </div>
+
+        <RigsInfo />
       </div>
 
       {/* Mobile sticky bar */}
@@ -582,7 +585,14 @@ export default function Configurator() {
       )}
 
       {/* Info modal */}
-      {infoItem && (
+      {infoItem && (() => {
+        // For items that exist in Refresh (shared id), always show the Refresh
+        // info text + photo so carryover items look identical on both pages.
+        const refreshItem = itemById[infoItem.id];
+        const displayInfo = (refreshItem && refreshItem.info) ? refreshItem.info : infoItem.info;
+        const capexItem = capexItemById[infoItem.id];
+        const inCapex = mode === 'capex';
+        return (
         <div className="modal-bg show" onClick={(e) => { if (e.target.classList.contains('modal-bg')) setInfoItem(null); }}>
           <div className="modal modal-sm">
             <button className="modal-close" aria-label="Close" onClick={() => setInfoItem(null)}>&times;</button>
@@ -596,15 +606,22 @@ export default function Configurator() {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
               onLoad={(e) => { e.currentTarget.style.display = 'block'; }}
             />
-            <span className="eyebrow">What you&apos;re adding</span>
+            <span className="eyebrow">{inCapex ? 'About this item' : 'What you\u2019re adding'}</span>
             <h3>{infoItem.name}</h3>
-            <p style={{ color: 'var(--grey)', fontSize: '14.5px', lineHeight: 1.6, margin: '10px 0 16px' }}>{infoItem.info}</p>
+            <p style={{ color: 'var(--grey)', fontSize: '14.5px', lineHeight: 1.6, margin: '10px 0 16px' }}>{displayInfo}</p>
             <div style={{ background: '#f0fbfd', border: '1px solid #cdeef4', borderRadius: 10, padding: '12px 16px', fontSize: '13.5px', color: 'var(--navy)' }}>
-              {infoItem.included ? 'Included free on every Refresh subscription' : <><b>${fmt(infoItem.mo)}/mo</b> on Refresh · vs {infoItem.cash} to buy</>}
+              {inCapex
+                ? (capexItem?.core
+                    ? <><b>${fmt(capexItem.price)}</b> · the foundation of every purchase build</>
+                    : capexItem?.suite
+                      ? <><b>${fmt(capexItem.priceUp)}</b> up front · or ${fmt(capexItem.priceMo)}/mo</>
+                      : <><b>${fmt(capexItem?.price || 0)}</b> · one-time purchase</>)
+                : (infoItem.included ? 'Included free on every Refresh subscription' : <><b>${fmt(infoItem.mo)}/mo</b> on Refresh · vs {infoItem.cash} to buy</>)}
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* Send modal */}
       {showSend && (
