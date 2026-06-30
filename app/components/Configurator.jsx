@@ -20,6 +20,44 @@ const PLAN_TO_HS = { 'Base Camp': 'base_camp', Ascent: 'ascent', Summit: 'summit
 
 // Posts the configuration to HubSpot via the Forms API, from the browser so the
 // hubspotutk cookie (gclid/UTM attribution) is included. Best-effort: never blocks the lead.
+// Lightweight CapEx version: creates/finds the contact (with ad attribution via
+// the hubspotutk cookie) but writes no custom fields. Best-effort, never blocks.
+async function submitCapexContact({ name, email, phone }) {
+  try {
+    const hutk = (typeof document !== 'undefined' ? document.cookie : '')
+      .split('; ')
+      .find((r) => r.startsWith('hubspotutk='))?.split('=')[1] || '';
+    const parts = String(name).trim().split(/\s+/);
+    const firstName = parts.shift() || '';
+    const lastName = parts.join(' ');
+    const payload = {
+      fields: [
+        { name: 'firstname', value: firstName },
+        { name: 'lastname', value: lastName },
+        { name: 'email', value: email },
+        { name: 'phone', value: phone },
+      ],
+      context: {
+        ...(hutk ? { hutk } : {}),
+        pageUri: 'https://pricing.lucidbots.com/',
+        pageName: 'Lucid Bots CapEx Pricing Configurator',
+      },
+    };
+    const res = await fetch(HS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      console.error('HubSpot capex contact submit failed:', res.status, await res.text());
+    }
+  } catch (err) {
+    console.error('HubSpot capex contact submit error:', err);
+  }
+}
+
+// Posts the full Refresh configuration to HubSpot via the Forms API, from the
+// browser so the hubspotutk cookie (gclid/UTM attribution) is included.
 async function submitToHubSpot({ name, email, phone, planName, addonNames, monthlyTotal }) {
   try {
     const hutk = (typeof document !== 'undefined' ? document.cookie : '')
@@ -229,6 +267,13 @@ export default function Configurator() {
         });
         if (!res.ok) throw new Error('submit failed');
         const capexAddons = capexIds.map((id) => capexItemById[id]?.name).filter(Boolean);
+        // Create/find the contact in HubSpot (basic fields + ad attribution).
+        // No custom field writeback for CapEx yet — just get the lead into the CRM.
+        submitCapexContact({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+        });
         // Conversion event (separate from Refresh so marketing can measure it on its own).
         if (typeof window !== 'undefined') {
           window.dataLayer = window.dataLayer || [];
@@ -238,7 +283,6 @@ export default function Configurator() {
             total_purchase: capexTotal(capexIds),
           });
         }
-        // (HubSpot writeback for CapEx intentionally deferred — to be wired with Yana later.)
         setShowSend(false);
         setShowSent(true);
         return;
