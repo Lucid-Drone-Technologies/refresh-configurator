@@ -6,7 +6,7 @@ import RigsInfo from './RigsInfo';
 // CapEx (outright purchase) view. Mirrors the Sherpa Package one-pager and the
 // Refresh page's styling. The drone is the always-included foundation; everything
 // else is an optional add-on. Rigs are a separate informational section (RigsInfo).
-export default function CapexBody({ selected, toggle, taxState, setTaxState, onInfo, onLockIn }) {
+export default function CapexBody({ selected, toggle, taxState, setTaxState, onInfo, onLockIn, onCompare }) {
   const total = capexTotal([...selected]);
   const rate = taxRateFor(taxState);
   const withTax = Math.round(total * (1 + rate));
@@ -24,23 +24,27 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
       <div className="grid">
         <div>
           {CAPEX_SECTIONS.map((section) => {
-            // Foundation (core drone): shown as the included box.
+            // Foundation: core drone (priced) + any always-included givens.
             if (section.key === 'foundation') {
-              const core = section.items[0];
-              const coreDesc = core.desc;
               return (
                 <div className="inc-box" key={section.key}>
                   <div className="inc-eyebrow">{section.label} · {section.sub}</div>
                   <div className="inc-grid">
-                    <div className="inc-item">
-                      <div className="inc-item-top">
-                        <span className="inc-item-name">{core.name}
-                          <button className="info-btn" aria-label={`Learn more about ${core.name}`} onClick={() => onInfo(capexItemById[core.id])}>?</button>
-                        </span>
-                        <span className="inc-item-price">${fmt(core.price)}</span>
+                    {section.items.map((it) => (
+                      <div className="inc-item" key={it.id}>
+                        <div className="inc-item-top">
+                          <span className="inc-item-name">{it.name}
+                            <button className="info-btn" aria-label={`Learn more about ${it.name}`} onClick={() => onInfo(it)}>?</button>
+                          </span>
+                          {it.included ? (
+                            <span className="inc-item-price inc-included">Included<small> · ${fmt(it.valueMo)}/mo value</small></span>
+                          ) : (
+                            <span className="inc-item-price"><b>${fmt(it.price)}</b></span>
+                          )}
+                        </div>
+                        <div className="inc-item-desc">{it.desc}</div>
                       </div>
-                      <div className="inc-item-desc">{coreDesc}</div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               );
@@ -59,7 +63,7 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
                       <div className={'card' + (on ? ' added' : '')} key={it.id}>
                         <div className="top">
                           <div className="ttl">{it.name}
-                            <button className="info-btn" aria-label={`Learn more about ${it.name}`} onClick={() => onInfo(capexItemById[it.id])}>?</button>
+                            <button className="info-btn" aria-label={`Learn more about ${it.name}`} onClick={() => onInfo(it)}>?</button>
                           </div>
                           <div className="mo">{priceLabel}{it.suite ? <small> or ${fmt(it.priceMo)}/mo</small> : null}</div>
                         </div>
@@ -112,6 +116,7 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
             </div>
 
             <button className="btn btn-send" onClick={onLockIn}>Request this build</button>
+            <button className="sc-more" onClick={onCompare}>Compare to Refresh</button>
           </div>
         </div>
       </div>

@@ -45,7 +45,9 @@ export const CAPEX_SECTIONS = [
     key: 'foundation', label: 'Sherpa Flight System', sub: 'Your foundation',
     items: [
       { id: 'flight', name: 'Sherpa Flight System', price: 45750, core: true,
-        desc: 'Aircraft, batteries, chargers, cases, and field kit.', info: 'The complete standard package and the foundation of every build: the Sherpa aircraft, flight batteries, chargers, cases, and field accessories. Everything you need to fly, owned outright.' },
+        desc: 'Aircraft, batteries, chargers, cases, and field kit.', info: 'The complete standard package and the starting point of every purchase: the Sherpa aircraft, flight batteries, chargers, cases, and field accessories. Everything you need to fly, owned outright.' },
+      { id: 'diag', name: 'Remote Diagnostics', included: true, valueMo: 100,
+        desc: 'We monitor your Sherpa and head off downtime before it costs a job.', info: 'Included with every purchase. We watch your Sherpa\'s health remotely and flag issues before they become downtime, so the drone stays in the air and your schedule stays intact. A $100/mo value, included at no cost when you buy outright.' },
     ],
   },
   {
@@ -108,8 +110,8 @@ export const RIGS = [
   { id: 'truckbed', name: 'Truck Bed Skid',   desc: 'Built for a long truck bed.',              pdf: '/rigs/truckbed.pdf' },
 ];
 
-// Flat lookup of all priced CapEx items (excludes info-only rigs).
-export const CAPEX_ITEMS = CAPEX_SECTIONS.flatMap((s) => s.items).filter((it) => !it.infoOnly);
+// Flat lookup of all priced CapEx items (excludes info-only rigs and always-included givens).
+export const CAPEX_ITEMS = CAPEX_SECTIONS.flatMap((s) => s.items).filter((it) => !it.infoOnly && !it.included);
 export const capexItemById = Object.fromEntries(CAPEX_ITEMS.map((i) => [i.id, i]));
 
 // CapEx total: core drone + selected add-ons. Lucid Suite uses its up-front price.
@@ -121,6 +123,31 @@ export function capexTotal(selectedIds) {
     t += it.suite ? it.priceUp : it.price;
   });
   return t;
+}
+
+// Refresh-equivalent estimate for the CapEx "Compare to Refresh" modal.
+// Maps the shared core CapEx items to their Refresh monthly price, and always
+// includes what Refresh bundles into every tier: loaner, remote diagnostics,
+// and the app. Training has no clean monthly equivalent and is excluded.
+// Returns { mo, months, total, mapped, excludedTraining }.
+const CAPEX_TO_REFRESH = { flight: 'flight', window: 'window', shield: 'shield', tether: 'tether', mktg: 'mktg', ndaa: 'ndaa' };
+const REFRESH_ALWAYS = ['loaner', 'diag', 'app']; // bundled into every Refresh tier
+const CAPEX_TRAINING = ['train1', 'train3', 'ojt'];
+export function refreshEquivalent(selectedIds) {
+  let mo = 0;
+  const mapped = [];
+  // Core drone is always in a CapEx build.
+  const ids = ['flight', ...selectedIds.filter((id) => id !== 'flight')];
+  ids.forEach((id) => {
+    const refId = CAPEX_TO_REFRESH[id];
+    if (!refId) return; // suite + training have no direct monthly map
+    mo += itemById[refId].mo;
+    mapped.push(refId);
+  });
+  // Refresh bundles these into every tier, so they belong in the estimate.
+  REFRESH_ALWAYS.forEach((refId) => { mo += itemById[refId].mo; });
+  const excludedTraining = selectedIds.some((id) => CAPEX_TRAINING.includes(id));
+  return { mo, months: TERM, total: mo * TERM, mapped, excludedTraining };
 }
 
 // State base sales-tax rates (state-level only; local city/county not included).

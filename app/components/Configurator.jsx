@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   TIERS, ITEMS, GROUPS, itemById, STATE_NAMES, STATE_TAX,
   fmt, computeTotal, cashTotal, financeTotal, configName, taxRateFor, TERM,
-  CAPEX_ITEMS, capexItemById, capexTotal,
+  CAPEX_ITEMS, capexItemById, capexTotal, refreshEquivalent,
 } from '../lib/data';
 import CapexBody from './CapexBody';
 import RigsInfo from './RigsInfo';
@@ -390,6 +390,7 @@ export default function Configurator() {
           setTaxState={setTaxState}
           onInfo={setInfoItem}
           onLockIn={openSend}
+          onCompare={() => setShowCompare(true)}
         />
       )}
 
@@ -611,8 +612,8 @@ export default function Configurator() {
 
       <SiteFooter />
 
-      {/* Compare modal */}
-      {showCompare && (
+      {/* Compare modal — Refresh mode */}
+      {showCompare && mode === 'refresh' && (
         <div className="modal-bg show" onClick={(e) => { if (e.target.classList.contains('modal-bg')) setShowCompare(false); }}>
           <div className="modal">
             <button className="modal-close" aria-label="Close" onClick={() => setShowCompare(false)}>&times;</button>
@@ -636,14 +637,39 @@ export default function Configurator() {
         </div>
       )}
 
+      {/* Compare modal — CapEx mode */}
+      {showCompare && mode === 'capex' && (() => {
+        const eq = refreshEquivalent([...capexSelected]);
+        return (
+        <div className="modal-bg show" onClick={(e) => { if (e.target.classList.contains('modal-bg')) setShowCompare(false); }}>
+          <div className="modal">
+            <button className="modal-close" aria-label="Close" onClick={() => setShowCompare(false)}>&times;</button>
+            <span className="eyebrow">Compare to Refresh</span>
+            <h3>The same core build on Refresh</h3>
+            <p className="sub">You are purchasing outright. Here is roughly what the same core equipment would run on a 24-month Refresh subscription, with service, loaner coverage, and upgrades included.</p>
+            <div className="cmp-cols">
+              <div className="cmp-card"><div className="lbl">Buy outright</div><div className="big">${fmt(capexTotal([...capexSelected]))}</div><div className="note">Paid up front · you own it</div></div>
+              <div className="cmp-card win"><div className="lbl">Refresh</div><div className="big">${fmt(eq.mo)}/mo</div><div className="note">$0 down · service &amp; upgrades included</div><div className="pill">$0 down</div></div>
+            </div>
+            <div className="boomlift">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2v20M2 12h20" /></svg>
+              <div className="txt">Refresh spreads the cost over {eq.months} months with no money down, and every repair and upgrade stays on us. Owning outright means the equipment is yours from day one.{eq.excludedTraining ? ' Training is a one-time cost on both and is not included in this monthly estimate.' : ''} This is a planning estimate for the core aircraft and payloads, not a quote.</div>
+            </div>
+          </div>
+        </div>
+        );
+      })()}
+
       {/* Info modal */}
       {infoItem && (() => {
-        // For items that exist in Refresh (shared id), always show the Refresh
-        // info text + photo so carryover items look identical on both pages.
-        const refreshItem = itemById[infoItem.id];
-        const displayInfo = (refreshItem && refreshItem.info) ? refreshItem.info : infoItem.info;
-        const capexItem = capexItemById[infoItem.id];
         const inCapex = mode === 'capex';
+        // In CapEx mode, show the item's own (purchase-native) copy. In Refresh
+        // mode, shared items show the Refresh info text so carryover looks identical.
+        const refreshItem = itemById[infoItem.id];
+        const displayInfo = inCapex
+          ? infoItem.info
+          : ((refreshItem && refreshItem.info) ? refreshItem.info : infoItem.info);
+        const capexItem = infoItem;
         return (
         <div className="modal-bg show" onClick={(e) => { if (e.target.classList.contains('modal-bg')) setInfoItem(null); }}>
           <div className="modal modal-sm">
@@ -663,11 +689,13 @@ export default function Configurator() {
             <p style={{ color: 'var(--grey)', fontSize: '14.5px', lineHeight: 1.6, margin: '10px 0 16px' }}>{displayInfo}</p>
             <div style={{ background: '#f0fbfd', border: '1px solid #cdeef4', borderRadius: 10, padding: '12px 16px', fontSize: '13.5px', color: 'var(--navy)' }}>
               {inCapex
-                ? (capexItem?.core
-                    ? <><b>${fmt(capexItem.price)}</b> · the foundation of every purchase build</>
-                    : capexItem?.suite
-                      ? <><b>${fmt(capexItem.priceUp)}</b> up front · or ${fmt(capexItem.priceMo)}/mo</>
-                      : <><b>${fmt(capexItem?.price || 0)}</b> · one-time purchase</>)
+                ? (capexItem?.included
+                    ? <>Included with every purchase · <b>${fmt(capexItem.valueMo)}/mo</b> value</>
+                    : capexItem?.core
+                      ? <><b>${fmt(capexItem.price)}</b> · the foundation of every purchase build</>
+                      : capexItem?.suite
+                        ? <><b>${fmt(capexItem.priceUp)}</b> up front · or ${fmt(capexItem.priceMo)}/mo</>
+                        : <><b>${fmt(capexItem?.price || 0)}</b> · one-time purchase</>)
                 : (infoItem.included ? 'Included free on every Refresh subscription' : <><b>${fmt(infoItem.mo)}/mo</b> on Refresh · vs {infoItem.cash} to buy</>)}
             </div>
           </div>
