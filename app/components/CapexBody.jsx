@@ -37,9 +37,12 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
                             <button className="info-btn" aria-label={`Learn more about ${it.name}`} onClick={() => onInfo(it)}>?</button>
                           </span>
                           {it.included ? (
-                            <span className="inc-item-price inc-included">Included<small> · ${fmt(it.valueMo)}/mo value</small></span>
+                            <span className="inc-item-price inc-included">
+                              <span className="inc-inc-tag">Included</span>
+                              <span className="inc-inc-val">${fmt(it.valueMo)}/mo value</span>
+                            </span>
                           ) : (
-                            <span className="inc-item-price"><b>${fmt(it.price)}</b></span>
+                            <span className="inc-item-price">${fmt(it.price)}</span>
                           )}
                         </div>
                         <div className="inc-item-desc">{it.desc}</div>

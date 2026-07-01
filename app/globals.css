@@ -119,6 +119,10 @@
   .inc-item{background:#fff;border:1px solid #dceef2;border-radius:10px;padding:12px 13px}
   .inc-item-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px}
   .inc-item-name{font-weight:600;font-size:13.5px;color:var(--navy)}
+  .inc-item-price{font-family:'Roboto';font-weight:700;font-size:14px;color:var(--navy);white-space:nowrap}
+  .inc-included{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15;text-align:right}
+  .inc-included .inc-inc-tag{font-weight:700;font-size:12px;color:var(--cyan-dk);text-transform:uppercase;letter-spacing:.04em}
+  .inc-included .inc-inc-val{font-size:10.5px;color:var(--grey);font-weight:500}
   .inc-item-desc{font-size:12px;color:var(--grey);line-height:1.4}
 
   .addable-label{font-family:'Poppins';font-weight:700;font-size:20px;color:var(--navy);margin-top:28px;margin-bottom:6px;letter-spacing:-.01em;line-height:1.2;display:flex;align-items:center;gap:11px}
