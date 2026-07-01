@@ -1,6 +1,6 @@
 'use client';
 
-import { CAPEX_SECTIONS, capexItemById, capexTotal, fmt, taxRateFor, STATE_NAMES, itemById } from '../lib/data';
+import { CAPEX_SECTIONS, capexItemById, capexTotal, fmt, taxRateFor, STATE_NAMES } from '../lib/data';
 import RigsInfo from './RigsInfo';
 
 // CapEx (outright purchase) view. Mirrors the Sherpa Package one-pager and the
@@ -27,7 +27,7 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
             // Foundation (core drone): shown as the included box.
             if (section.key === 'foundation') {
               const core = section.items[0];
-              const coreDesc = itemById[core.id]?.desc || core.desc;
+              const coreDesc = core.desc;
               return (
                 <div className="inc-box" key={section.key}>
                   <div className="inc-eyebrow">{section.label} · {section.sub}</div>
@@ -54,7 +54,7 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
                   {section.items.map((it) => {
                     const on = selected.has(it.id);
                     const priceLabel = it.suite ? `$${fmt(it.priceUp)}` : `$${fmt(it.price)}`;
-                    const cardDesc = itemById[it.id]?.desc || it.desc;
+                    const cardDesc = it.desc;
                     return (
                       <div className={'card' + (on ? ' added' : '')} key={it.id}>
                         <div className="top">

@@ -42,18 +42,18 @@ export const itemById = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
 // ============================================================================
 export const CAPEX_SECTIONS = [
   {
-    key: 'foundation', label: 'The Sherpa Drone', sub: 'Your foundation',
+    key: 'foundation', label: 'Sherpa Flight System', sub: 'Your foundation',
     items: [
-      { id: 'flight', name: 'The Sherpa Drone', price: 45750, core: true,
+      { id: 'flight', name: 'Sherpa Flight System', price: 45750, core: true,
         desc: 'Aircraft, batteries, chargers, cases, and field kit.', info: 'The complete standard package and the foundation of every build: the Sherpa aircraft, flight batteries, chargers, cases, and field accessories. Everything you need to fly, owned outright.' },
     ],
   },
   {
     key: 'payload', label: 'Choose Your Payload', sub: 'Pick one or both',
     items: [
-      { id: 'window', name: 'Window Washing Payload', price: 11500,
+      { id: 'window', name: 'Window Payload', price: 11500,
         desc: 'Soft-wash windows, glass, and building exteriors at height.', info: 'A purpose-built spray system for soft-washing windows, glass, and building exteriors at height. Streak-free results without lifts or rope crews, so a one-pilot crew covers far more square footage per day.' },
-      { id: 'shield', name: 'Shield Payload (Concrete Sealing)', price: 15000,
+      { id: 'shield', name: 'Shield Payload', price: 15000,
         desc: 'Apply protective sealant to large concrete surfaces fast.', info: 'Our concrete-sealing payload applies protective sealant to large concrete surfaces fast, turning slow, labor-heavy sealing work into a one-pilot job, and opening up the highest-ticket jobs in the industry.' },
     ],
   },
@@ -65,9 +65,9 @@ export const CAPEX_SECTIONS = [
     ],
   },
   {
-    key: 'support', label: 'Lucid Suite Support Package', sub: 'Optional add-on',
+    key: 'support', label: 'Loaner Fleet + Premium Support', sub: 'Optional add-on',
     items: [
-      { id: 'suite', name: 'Lucid Suite Support Package', suite: true, priceUp: 12000, priceMo: 500,
+      { id: 'suite', name: 'Loaner Fleet + Premium Support', suite: true, priceUp: 12000, priceMo: 500,
         desc: 'Ongoing support and coverage to keep you flying.', info: 'Ongoing support, coverage, and resources to keep your drone flying and your business growing. Available at $12,000 up front or $500/mo, your rep can walk through which fits best.' },
     ],
   },
@@ -83,9 +83,9 @@ export const CAPEX_SECTIONS = [
     ],
   },
   {
-    key: 'marketing', label: 'Marketing Package', sub: 'Optional add-on',
+    key: 'marketing', label: 'Marketing Content Package', sub: 'Optional add-on',
     items: [
-      { id: 'mktg', name: 'Marketing Package', price: 10000,
+      { id: 'mktg', name: 'Marketing Content Package', price: 10000,
         desc: 'Done-for-you marketing assets and strategy from day one.', info: 'Done-for-you marketing assets and strategy to win drone-cleaning work from day one, so you launch with a brand and a pipeline instead of building from scratch.' },
     ],
   },
