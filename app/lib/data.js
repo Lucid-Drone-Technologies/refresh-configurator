@@ -125,29 +125,39 @@ export function capexTotal(selectedIds) {
   return t;
 }
 
-// Refresh-equivalent estimate for the CapEx "Compare to Refresh" modal.
-// Maps the shared core CapEx items to their Refresh monthly price, and always
-// includes what Refresh bundles into every tier: loaner, remote diagnostics,
-// and the app. Training has no clean monthly equivalent and is excluded.
-// Returns { mo, months, total, mapped, excludedTraining }.
-const CAPEX_TO_REFRESH = { flight: 'flight', window: 'window', shield: 'shield', tether: 'tether', mktg: 'mktg', ndaa: 'ndaa' };
-const REFRESH_ALWAYS = ['loaner', 'diag', 'app']; // bundled into every Refresh tier
+// Closest Refresh tier for a given CapEx selection, for the "Compare to Refresh"
+// modal. Maps the customer's CapEx signals onto the tier Refresh would put them
+// in, and surfaces any add-ons they configured that sit beyond that tier so the
+// modal can note they carry over. Returns:
+//   { tier, includedNames, extras (CapEx items beyond the tier), outrightNow }
 const CAPEX_TRAINING = ['train1', 'train3', 'ojt'];
-export function refreshEquivalent(selectedIds) {
-  let mo = 0;
-  const mapped = [];
-  // Core drone is always in a CapEx build.
-  const ids = ['flight', ...selectedIds.filter((id) => id !== 'flight')];
-  ids.forEach((id) => {
-    const refId = CAPEX_TO_REFRESH[id];
-    if (!refId) return; // suite + training have no direct monthly map
-    mo += itemById[refId].mo;
-    mapped.push(refId);
+// CapEx add-on ids that have a Refresh monthly equivalent (for the "extras" note).
+const CAPEX_TO_REFRESH = { window: 'window', shield: 'shield', tether: 'tether', mktg: 'mktg', ndaa: 'ndaa' };
+export function refreshMatch(selectedIds, outrightNow) {
+  const has = (id) => selectedIds.includes(id);
+  // Signal-based tier match:
+  //   shield or tether  -> Summit (scaling: bigger jobs, more airtime)
+  //   marketing, no big  -> Ascent (starting a business)
+  //   otherwise          -> Base Camp (adding a drone to an existing crew)
+  let tierKey = 'base';
+  if (has('shield') || has('tether')) tierKey = 'summit';
+  else if (has('mktg')) tierKey = 'ascent';
+  const tier = TIERS[tierKey];
+
+  // What the matched tier already includes, as display names.
+  const includedNames = tier.items.map((id) => itemById[id].name);
+
+  // CapEx add-ons the customer configured that the matched tier does NOT include.
+  const extras = [];
+  Object.keys(CAPEX_TO_REFRESH).forEach((cid) => {
+    const refId = CAPEX_TO_REFRESH[cid];
+    if (has(cid) && !tier.items.includes(refId)) extras.push(itemById[refId].name);
   });
-  // Refresh bundles these into every tier, so they belong in the estimate.
-  REFRESH_ALWAYS.forEach((refId) => { mo += itemById[refId].mo; });
-  const excludedTraining = selectedIds.some((id) => CAPEX_TRAINING.includes(id));
-  return { mo, months: TERM, total: mo * TERM, mapped, excludedTraining };
+  if (selectedIds.some((id) => CAPEX_TRAINING.includes(id)) && !tier.items.includes('ojt')) {
+    extras.push('Training');
+  }
+
+  return { tierKey, tier, includedNames, extras, outrightNow };
 }
 
 // State base sales-tax rates (state-level only; local city/county not included).

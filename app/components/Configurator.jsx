@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   TIERS, ITEMS, GROUPS, itemById, STATE_NAMES, STATE_TAX,
   fmt, computeTotal, cashTotal, financeTotal, configName, taxRateFor, TERM,
-  CAPEX_ITEMS, capexItemById, capexTotal, refreshEquivalent,
+  CAPEX_ITEMS, capexItemById, capexTotal, refreshMatch,
 } from '../lib/data';
 import CapexBody from './CapexBody';
 import RigsInfo from './RigsInfo';
@@ -639,22 +639,49 @@ export default function Configurator() {
 
       {/* Compare modal — CapEx mode */}
       {showCompare && mode === 'capex' && (() => {
-        const eq = refreshEquivalent([...capexSelected]);
+        const outright = capexTotal([...capexSelected]);
+        const m = refreshMatch([...capexSelected], outright);
         return (
         <div className="modal-bg show" onClick={(e) => { if (e.target.classList.contains('modal-bg')) setShowCompare(false); }}>
           <div className="modal">
             <button className="modal-close" aria-label="Close" onClick={() => setShowCompare(false)}>&times;</button>
             <span className="eyebrow">Compare to Refresh</span>
-            <h3>The same core build on Refresh</h3>
-            <p className="sub">You are purchasing outright. Here is roughly what the same core equipment would run on a 24-month Refresh subscription, with service, loaner coverage, and upgrades included.</p>
+            <h3>Your build on Refresh: the {m.tier.name} package</h3>
+            <p className="sub">Not ready to put ${fmt(outright)} down today? Based on what you configured, Refresh would start you on the <b>{m.tier.name}</b> package. Same class of equipment, {'$'}0 out of pocket, with service, coverage, and upgrades included every term.</p>
+
             <div className="cmp-cols">
-              <div className="cmp-card"><div className="lbl">Buy outright</div><div className="big">${fmt(capexTotal([...capexSelected]))}</div><div className="note">Paid up front · you own it</div></div>
-              <div className="cmp-card win"><div className="lbl">Refresh</div><div className="big">${fmt(eq.mo)}/mo</div><div className="note">$0 down · service &amp; upgrades included</div><div className="pill">$0 down</div></div>
+              <div className="cmp-card"><div className="lbl">Buy outright</div><div className="big">${fmt(outright)}</div><div className="note">Paid up front · you own it</div></div>
+              <div className="cmp-card win"><div className="lbl">Refresh · {m.tier.name}</div><div className="big">{m.tier.price}<small style={{ fontSize: '15px', fontWeight: 600 }}>/mo</small></div><div className="note">$0 down · all-inclusive</div><div className="pill">$0 down</div></div>
             </div>
-            <div className="boomlift">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2v20M2 12h20" /></svg>
-              <div className="txt">Refresh spreads the cost over {eq.months} months with no money down, and every repair and upgrade stays on us. Owning outright means the equipment is yours from day one.{eq.excludedTraining ? ' Training is a one-time cost on both and is not included in this monthly estimate.' : ''} This is a planning estimate for the core aircraft and payloads, not a quote.</div>
+
+            <div className="cmp-included">
+              <div className="ci-title">What {m.tier.name} includes</div>
+              <ul className="ci-list">
+                {m.includedNames.map((n) => (
+                  <li key={n}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>{n}</li>
+                ))}
+              </ul>
             </div>
+
+            <div className="cmp-value">
+              <div className="cv-item"><b>$0 down</b> instead of a ${fmt(outright)} outlay today</div>
+              <div className="cv-item"><b>Everything included:</b> repairs, loaner coverage, remote diagnostics</div>
+              <div className="cv-item"><b>Upgrades every term</b> so you are never flying outdated equipment</div>
+              <div className="cv-item"><b>Predictable monthly cost</b> instead of a large capital hit</div>
+            </div>
+
+            {m.extras.length > 0 && (
+              <div className="boomlift">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 5v14M5 12h14" /></svg>
+                <div className="txt">You also configured {m.extras.join(', ')}. Any of these can be added on top of the {m.tier.name} package, your rep will walk through the options.</div>
+              </div>
+            )}
+            {m.extras.length === 0 && (
+              <div className="boomlift">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 5v14M5 12h14" /></svg>
+                <div className="txt">Want more airtime, bigger jobs, or business support? Any add-on can go on top of the {m.tier.name} package, your rep will walk through the options.</div>
+              </div>
+            )}
           </div>
         </div>
         );
