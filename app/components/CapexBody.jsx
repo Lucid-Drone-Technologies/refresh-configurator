@@ -119,7 +119,13 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
             </div>
 
             <button className="btn btn-send" onClick={onLockIn}>Request this build</button>
-            <button className="sc-more" onClick={onCompare}>Compare to Refresh</button>
+          </div>
+
+          {/* Compare-to-Refresh sub-box, mirrors the Refresh savings card */}
+          <div className="compare-card">
+            <div className="cc-eyebrow">Another way to pay</div>
+            <div className="cc-hook">See what this build would cost on a Refresh subscription, $0 down.</div>
+            <button className="cc-btn" onClick={onCompare}>Compare to Refresh</button>
           </div>
         </div>
       </div>

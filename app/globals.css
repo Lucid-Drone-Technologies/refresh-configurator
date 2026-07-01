@@ -230,6 +230,13 @@
   .savings-card .sc-more{width:100%;background:var(--green);color:#fff;border:none;font-family:'Inter';font-weight:600;font-size:13.5px;padding:11px;border-radius:10px;cursor:pointer;transition:background .15s}
   .savings-card .sc-more:hover{background:#1a8a4c}
 
+  /* compare-to-refresh sub-box on the CapEx panel (cyan twin of savings-card) */
+  .compare-card{background:#f0fbfd;border:2px solid var(--cyan);border-radius:18px;box-shadow:0 6px 20px rgba(35,192,216,.15);padding:18px 20px;margin-top:16px;text-align:center}
+  .compare-card .cc-eyebrow{font-family:'Roboto';text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:500;color:var(--cyan-dk);margin-bottom:8px}
+  .compare-card .cc-hook{font-size:13px;color:var(--navy);line-height:1.45;margin-bottom:14px}
+  .compare-card .cc-btn{width:100%;background:var(--cyan);color:var(--navy);border:none;font-family:'Inter';font-weight:600;font-size:13.5px;padding:11px;border-radius:10px;cursor:pointer;transition:background .15s}
+  .compare-card .cc-btn:hover{background:var(--cyan-dk);color:#fff}
+
   /* modals */
   .modal-bg{position:fixed;inset:0;background:rgba(20,41,51,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
   .modal-bg.show{display:flex}
