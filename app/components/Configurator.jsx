@@ -98,8 +98,8 @@ async function submitToHubSpot({ name, email, phone, planName, addonNames, month
   }
 }
 
-export default function Configurator() {
-  const [mode, setMode] = useState('refresh'); // 'refresh' | 'capex'
+export default function Configurator({ initialMode = 'refresh' }) {
+  const [mode, setMode] = useState(initialMode); // 'refresh' | 'capex'
   const [capexSelected, setCapexSelected] = useState(() => new Set());
   const [tier, setTier] = useState('base');
   const [selected, setSelected] = useState(() => new Set(TIERS.base.items));

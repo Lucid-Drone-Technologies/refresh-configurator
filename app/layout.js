@@ -7,6 +7,13 @@ export const metadata = {
   alternates: {
     canonical: 'https://pricing.lucidbots.com/',
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png' },
+    ],
+    apple: '/apple-icon.png',
+  },
 };
 
 const PRICING_SCHEMA = {
