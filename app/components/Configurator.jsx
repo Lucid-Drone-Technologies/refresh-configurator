@@ -140,6 +140,16 @@ export default function Configurator({ initialMode = 'refresh' }) {
 
   const doFlash = () => { setFlash(true); setTimeout(() => setFlash(false), 260); };
 
+  // Switch pricing mode and keep the URL slug in sync (no reload, no history spam).
+  // Preserves any existing query string (e.g. shared ?t=/?a= configs).
+  const switchMode = (next) => {
+    setMode(next);
+    if (typeof window !== 'undefined') {
+      const path = next === 'capex' ? '/capex' : '/refresh';
+      window.history.replaceState(null, '', path + window.location.search);
+    }
+  };
+
   const selectTier = (key) => {
     setTier(key);
     setSelected(new Set(TIERS[key].items));
@@ -360,13 +370,13 @@ export default function Configurator({ initialMode = 'refresh' }) {
               role="tab"
               aria-selected={mode === 'refresh'}
               className={`mode-btn ${mode === 'refresh' ? 'mode-on' : ''}`}
-              onClick={() => setMode('refresh')}
+              onClick={() => switchMode('refresh')}
             >Refresh</button>
             <button
               role="tab"
               aria-selected={mode === 'capex'}
               className={`mode-btn ${mode === 'capex' ? 'mode-on' : ''}`}
-              onClick={() => setMode('capex')}
+              onClick={() => switchMode('capex')}
             >CapEx</button>
           </div>
           <div className="hdr-contact">
