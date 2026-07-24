@@ -40,7 +40,9 @@
   .rig-card-sel.rig-on{border-color:var(--cyan);box-shadow:0 2px 12px rgba(35,192,216,.18)}
   .rig-card-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
   .rig-card-price{font-family:'Roboto';font-weight:700;font-size:14px;color:var(--navy);white-space:nowrap}
-  .rig-add{margin-bottom:10px}
+  .rig-add{width:100%;font-family:'Inter';font-weight:600;font-size:13.5px;padding:9px;border-radius:9px;border:1.5px solid var(--cyan);background:var(--white);color:var(--cyan-dk);cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px}
+  .rig-add:hover{background:#eafafd}
+  .rig-add svg{width:14px;height:14px}
   .rig-add.added{background:var(--cyan);color:var(--navy);border-color:var(--cyan)}
   @media(max-width:900px){.rigs-info-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:520px){.rigs-info-grid{grid-template-columns:1fr}}

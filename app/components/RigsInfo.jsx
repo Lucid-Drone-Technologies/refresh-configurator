@@ -59,7 +59,13 @@ export default function RigsInfo({ selectable = false, selected, toggle, onInfo 
                 className={`btn-add rig-add ${on ? 'added' : ''}`}
                 onClick={() => toggle(rig.id)}
                 aria-pressed={on}
-              >{on ? 'Added' : '+ Add'}</button>
+              >
+                {on ? (
+                  <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>Added · remove</>
+                ) : (
+                  <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>Add</>
+                )}
+              </button>
               <a className="rig-card-link" href={rig.pdf} target="_blank" rel="noopener noreferrer">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
                 View spec sheet
