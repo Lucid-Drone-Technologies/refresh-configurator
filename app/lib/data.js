@@ -104,17 +104,22 @@ export const CAPEX_SECTIONS = [
 // informational section on both the Refresh and CapEx pages, each linking to a
 // spec PDF. PDFs live in /public/rigs/{id}.pdf (uploaded separately).
 export const RIGS = [
-  { id: 'van',      name: 'Van Skid',        desc: 'Drop-in skid system for your cargo van.',  pdf: '/rigs/van.pdf' },
-  { id: 'enclosed', name: 'Enclosed Trailer', desc: 'Fully enclosed, trailer included.',        pdf: '/rigs/enclosed.pdf' },
-  { id: 'open',     name: 'Open Trailer',     desc: 'Open-deck platform, trailer included.',    pdf: '/rigs/open.pdf' },
-  { id: 'truckbed', name: 'Truck Bed Skid',   desc: 'Built for a long truck bed.',              pdf: '/rigs/truckbed.pdf' },
+  { id: 'van',      name: 'Van Skid',        price: 27999, desc: 'Drop-in skid system for your cargo van.',  pdf: '/rigs/van.pdf' },
+  { id: 'enclosed', name: 'Enclosed Trailer', price: 34199, desc: 'Fully enclosed, trailer included.',        pdf: '/rigs/enclosed.pdf' },
+  { id: 'open',     name: 'Open Trailer',     price: 32699, desc: 'Open-deck platform, trailer included.',    pdf: '/rigs/open.pdf' },
+  { id: 'truckbed', name: 'Truck Bed Skid',   price: 27999, desc: 'Built for a long truck bed.',              pdf: '/rigs/truckbed.pdf' },
 ];
+
+// Rig ids, used to enforce pick-one behavior when rigs are CapEx add-ons.
+export const RIG_IDS = RIGS.map((r) => r.id);
+export const rigById = Object.fromEntries(RIGS.map((r) => [r.id, r]));
 
 // Flat lookup of all priced CapEx items (excludes info-only rigs and always-included givens).
 export const CAPEX_ITEMS = CAPEX_SECTIONS.flatMap((s) => s.items).filter((it) => !it.infoOnly && !it.included);
 export const capexItemById = Object.fromEntries(CAPEX_ITEMS.map((i) => [i.id, i]));
 
-// CapEx total: core drone + selected add-ons. Lucid Suite uses its up-front price.
+// CapEx total: core drone + selected add-ons + a selected rig (pick-one).
+// Lucid Suite uses its up-front price.
 export function capexTotal(selectedIds) {
   let t = 0;
   CAPEX_ITEMS.forEach((it) => {
@@ -122,6 +127,9 @@ export function capexTotal(selectedIds) {
     if (!included) return;
     t += it.suite ? it.priceUp : it.price;
   });
+  // Add the selected rig, if any (rigs live outside CAPEX_ITEMS).
+  const rig = selectedIds.find((id) => rigById[id]);
+  if (rig) t += rigById[rig].price;
   return t;
 }
 

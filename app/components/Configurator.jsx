@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   TIERS, ITEMS, GROUPS, itemById, STATE_NAMES, STATE_TAX,
   fmt, computeTotal, cashTotal, financeTotal, configName, taxRateFor, TERM,
-  CAPEX_ITEMS, capexItemById, capexTotal, refreshMatch,
+  CAPEX_ITEMS, capexItemById, capexTotal, refreshMatch, RIG_IDS, rigById,
 } from '../lib/data';
 import CapexBody from './CapexBody';
 import RigsInfo from './RigsInfo';
@@ -169,7 +169,13 @@ export default function Configurator({ initialMode = 'refresh' }) {
   const toggleCapex = (id) => {
     setCapexSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        // Rigs are pick-one: selecting a rig clears any other rig first.
+        if (RIG_IDS.includes(id)) RIG_IDS.forEach((rid) => next.delete(rid));
+        next.add(id);
+      }
       return next;
     });
   };

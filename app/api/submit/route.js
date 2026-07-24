@@ -3,7 +3,7 @@ import { generatePdf } from '../../lib/pdf.jsx';
 import { generateCapexPdf } from '../../lib/capexPdf.jsx';
 import {
   TIERS, ITEMS, itemById, fmt, computeTotal, configName,
-  taxRateFor, STATE_NAMES, CAPEX_ITEMS, capexItemById, capexTotal,
+  taxRateFor, STATE_NAMES, CAPEX_ITEMS, capexItemById, capexTotal, rigById,
 } from '../../lib/data';
 import { rateLimit, clientIp, looksLikeBot } from '../../lib/guard';
 
@@ -36,7 +36,9 @@ export async function POST(req) {
       const emailOkC = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
       if (!emailOkC) return Response.json({ error: 'Invalid email.' }, { status: 400 });
 
-      const validCapex = capexSelected.filter((id) => capexItemById[id] && !capexItemById[id].core);
+      const validAddons = capexSelected.filter((id) => capexItemById[id] && !capexItemById[id].core);
+      const selRig = capexSelected.find((id) => rigById[id]);
+      const validCapex = selRig ? [...validAddons, selRig] : validAddons;
       const cTotal = capexTotal(validCapex);
       const cRate = taxRateFor(taxState);
       const cWithTax = Math.round(cTotal * (1 + cRate));
@@ -50,13 +52,14 @@ export async function POST(req) {
       const cContact = { name: String(name).trim(), email: String(email).trim(), phone: String(phone).trim() };
       const cPdf = await generateCapexPdf({ selected: validCapex, taxState, contact: cContact });
 
-      // Line items: core drone always, then selected add-ons
+      // Line items: core drone always, then selected add-ons, then rig if any
       const coreItem = CAPEX_ITEMS.find((it) => it.core);
+      const rigRow = selRig ? `<li>${rigById[selRig].name} (rig) — $${fmt(rigById[selRig].price)}</li>` : '';
       const lineRows = [coreItem, ...CAPEX_ITEMS.filter((it) => validCapex.includes(it.id))]
         .map((it) => {
           const p = it.suite ? it.priceUp : it.price;
           return `<li>${it.name} — $${fmt(p)}${it.suite ? ' (or $' + fmt(it.priceMo) + '/mo)' : ''}</li>`;
-        }).join('');
+        }).join('') + rigRow;
 
       const cHtml = `
         <div style="font-family:Arial,Helvetica,sans-serif;color:#142933;max-width:560px">

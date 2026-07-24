@@ -1,6 +1,6 @@
 'use client';
 
-import { CAPEX_SECTIONS, capexItemById, capexTotal, fmt, taxRateFor, STATE_NAMES } from '../lib/data';
+import { CAPEX_SECTIONS, capexItemById, capexTotal, fmt, taxRateFor, STATE_NAMES, rigById } from '../lib/data';
 import RigsInfo from './RigsInfo';
 
 // CapEx (outright purchase) view. Mirrors the Sherpa Package one-pager and the
@@ -12,7 +12,8 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
   const withTax = Math.round(total * (1 + rate));
   const taxed = !!(taxState && rate > 0);
   const bigNumber = taxed ? withTax : total;
-  const count = [...selected].filter((id) => capexItemById[id] && !capexItemById[id].core).length + 1;
+  const rigCount = [...selected].filter((id) => rigById[id]).length;
+  const count = [...selected].filter((id) => capexItemById[id] && !capexItemById[id].core).length + rigCount + 1;
 
   return (
     <div className="wrap">
@@ -128,8 +129,8 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
         </div>
       </div>
 
-      {/* Informational rigs section (not part of the build) */}
-      <RigsInfo />
+      {/* Rigs as selectable pick-one add-ons on CapEx */}
+      <RigsInfo selectable selected={selected} toggle={toggle} onInfo={onInfo} />
     </div>
   );
 }

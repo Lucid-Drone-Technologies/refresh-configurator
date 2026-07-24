@@ -2,7 +2,7 @@ import React from 'react';
 import fs from 'fs';
 import path from 'path';
 import { Document, Page, Text, View, Image, StyleSheet, Font, renderToBuffer } from '@react-pdf/renderer';
-import { CAPEX_ITEMS, capexItemById, capexTotal, fmt, taxRateFor } from './data';
+import { CAPEX_ITEMS, capexItemById, capexTotal, fmt, taxRateFor, rigById } from './data';
 
 // ---- Brand assets ----------------------------------------------------------
 const fontsDir = path.join(process.cwd(), 'public', 'fonts');
@@ -117,6 +117,8 @@ function CapexDoc({ data }) {
 
   const core = CAPEX_ITEMS.find((it) => it.core);
   const addons = CAPEX_ITEMS.filter((it) => selected.includes(it.id) && !it.core);
+  const rigId = selected.find((id) => rigById[id]);
+  const rig = rigId ? rigById[rigId] : null;
 
   return (
     <Document>
@@ -187,12 +189,22 @@ function CapexDoc({ data }) {
           </View>
         ) : null}
 
+        {rig ? (
+          <View>
+            <Text style={styles.sectionLabel}>RIG</Text>
+            <View style={styles.row}>
+              <Text style={styles.rowName}>{rig.name}</Text>
+              <Text style={styles.rowPrice}>+${fmt(rig.price)}</Text>
+            </View>
+          </View>
+        ) : null}
+
         <View style={styles.totalsBox}>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Sherpa aircraft</Text>
             <Text style={styles.totalVal}>${fmt(core.price)}</Text>
           </View>
-          {addons.length > 0 ? (
+          {(addons.length > 0 || rig) ? (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Added capabilities</Text>
               <Text style={styles.totalVal}>+${fmt(total - core.price)}</Text>
