@@ -44,6 +44,10 @@ export default function RigsInfo({ selectable = false, selected, toggle, onInfo 
           Purpose-built platforms engineered for the Sherpa. Pick the one that fits how you work and
           add it to your package. Open a spec sheet for the full build on each.
         </div>
+        <div className="rigs-info-fine">
+          Skid systems (Van, Truck Bed) mount into a vehicle you provide, the vehicle is not included.
+          Trailer rigs include the trailer, the tow vehicle is not included.
+        </div>
       </div>
       <div className="rigs-info-grid">
         {RIGS.map((rig) => {

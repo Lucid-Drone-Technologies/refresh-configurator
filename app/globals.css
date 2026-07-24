@@ -28,6 +28,7 @@
   .rigs-info-head{margin-bottom:16px}
   .rigs-info-title{font-family:'Poppins';font-weight:700;font-size:20px;color:var(--navy)}
   .rigs-info-sub{font-family:'Roboto';font-size:14px;color:var(--grey);max-width:640px;margin-top:5px;line-height:1.5}
+  .rigs-info-fine{font-family:'Roboto';font-size:12px;color:var(--grey);opacity:.85;max-width:640px;margin-top:8px;line-height:1.45;font-style:italic}
   .rigs-info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
   .rig-card{display:flex;flex-direction:column;border:1px solid var(--line,#e6ebed);border-radius:12px;padding:14px;background:#fafbfc;text-decoration:none;transition:border-color .15s,box-shadow .15s}
   .rig-card:hover{border-color:var(--cyan);box-shadow:0 2px 10px rgba(20,41,51,.06)}
