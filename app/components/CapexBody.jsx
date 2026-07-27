@@ -1,6 +1,6 @@
 'use client';
 
-import { CAPEX_SECTIONS, capexItemById, capexTotal, fmt, taxRateFor, STATE_NAMES, rigById } from '../lib/data';
+import { CAPEX_SECTIONS, capexItemById, capexTotal, fmt, taxRateFor, STATE_NAMES, rigById, CAPEX_REQUIRED } from '../lib/data';
 import RigsInfo from './RigsInfo';
 
 // CapEx (outright purchase) view. Mirrors the Sherpa Package one-pager and the
@@ -13,7 +13,7 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
   const taxed = !!(taxState && rate > 0);
   const bigNumber = taxed ? withTax : total;
   const rigCount = [...selected].filter((id) => rigById[id]).length;
-  const count = [...selected].filter((id) => capexItemById[id] && !capexItemById[id].core).length + rigCount + 1;
+  const count = [...selected].filter((id) => capexItemById[id] && !capexItemById[id].core).length + rigCount + 1 + CAPEX_REQUIRED.length;
 
   return (
     <div className="wrap">
@@ -37,7 +37,12 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
                           <span className="inc-item-name">{it.name}
                             <button className="info-btn" aria-label={`Learn more about ${it.name}`} onClick={() => onInfo(it)}>?</button>
                           </span>
-                          {it.included ? (
+                          {it.required ? (
+                            <span className="inc-item-price inc-required">
+                              <span className="inc-req-tag">Required</span>
+                              <span className="inc-inc-val">${fmt(it.price)}</span>
+                            </span>
+                          ) : it.included ? (
                             <span className="inc-item-price inc-included">
                               <span className="inc-inc-tag">Included</span>
                               <span className="inc-inc-val">${fmt(it.valueMo)}/mo value</span>
@@ -47,6 +52,9 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
                           )}
                         </div>
                         <div className="inc-item-desc">{it.desc}</div>
+                        {it.required && (
+                          <div className="inc-item-note">${fmt(it.price)} upfront or ${fmt(it.financeMo)}/mo for {it.financeMonths} months.</div>
+                        )}
                       </div>
                     ))}
                   </div>

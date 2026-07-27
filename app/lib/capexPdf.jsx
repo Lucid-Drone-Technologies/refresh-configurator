@@ -2,7 +2,7 @@ import React from 'react';
 import fs from 'fs';
 import path from 'path';
 import { Document, Page, Text, View, Image, StyleSheet, Font, renderToBuffer } from '@react-pdf/renderer';
-import { CAPEX_ITEMS, capexItemById, capexTotal, fmt, taxRateFor, rigById } from './data';
+import { CAPEX_ITEMS, capexItemById, capexTotal, fmt, taxRateFor, rigById, CAPEX_REQUIRED } from './data';
 
 // ---- Brand assets ----------------------------------------------------------
 const fontsDir = path.join(process.cwd(), 'public', 'fonts');
@@ -119,6 +119,8 @@ function CapexDoc({ data }) {
   const addons = CAPEX_ITEMS.filter((it) => selected.includes(it.id) && !it.core);
   const rigId = selected.find((id) => rigById[id]);
   const rig = rigId ? rigById[rigId] : null;
+  const required = CAPEX_REQUIRED;
+  const requiredSum = required.reduce((s, it) => s + it.price, 0);
 
   return (
     <Document>
@@ -175,6 +177,18 @@ function CapexDoc({ data }) {
           <Text style={styles.baseList}>{core.desc}</Text>
         </View>
 
+        {required.length > 0 ? (
+          <View>
+            <Text style={styles.sectionLabel}>REQUIRED</Text>
+            {required.map((it) => (
+              <View style={styles.row} key={it.id}>
+                <Text style={styles.rowName}>{it.name}</Text>
+                <Text style={styles.rowPrice}>+${fmt(it.price)}{it.financeMo ? ` (or $${fmt(it.financeMo)}/mo x ${it.financeMonths})` : ''}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
         {addons.length > 0 ? (
           <View>
             <Text style={styles.sectionLabel}>CAPABILITIES YOU ADDED</Text>
@@ -204,10 +218,16 @@ function CapexDoc({ data }) {
             <Text style={styles.totalLabel}>Sherpa aircraft</Text>
             <Text style={styles.totalVal}>${fmt(core.price)}</Text>
           </View>
+          {required.map((it) => (
+            <View style={styles.totalRow} key={it.id}>
+              <Text style={styles.totalLabel}>{it.name} (required)</Text>
+              <Text style={styles.totalVal}>+${fmt(it.price)}</Text>
+            </View>
+          ))}
           {(addons.length > 0 || rig) ? (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Added capabilities</Text>
-              <Text style={styles.totalVal}>+${fmt(total - core.price)}</Text>
+              <Text style={styles.totalVal}>+${fmt(total - core.price - requiredSum)}</Text>
             </View>
           ) : null}
           <View style={styles.totalRow}>

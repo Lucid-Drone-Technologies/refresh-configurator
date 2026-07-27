@@ -3,7 +3,7 @@ import { generatePdf } from '../../lib/pdf.jsx';
 import { generateCapexPdf } from '../../lib/capexPdf.jsx';
 import {
   TIERS, ITEMS, itemById, fmt, computeTotal, configName,
-  taxRateFor, STATE_NAMES, CAPEX_ITEMS, capexItemById, capexTotal, rigById,
+  taxRateFor, STATE_NAMES, CAPEX_ITEMS, capexItemById, capexTotal, rigById, CAPEX_REQUIRED,
 } from '../../lib/data';
 import { rateLimit, clientIp, looksLikeBot } from '../../lib/guard';
 
@@ -52,14 +52,17 @@ export async function POST(req) {
       const cContact = { name: String(name).trim(), email: String(email).trim(), phone: String(phone).trim() };
       const cPdf = await generateCapexPdf({ selected: validCapex, taxState, contact: cContact });
 
-      // Line items: core drone always, then selected add-ons, then rig if any
+      // Line items: core drone always, then required items, then selected add-ons, then rig if any
       const coreItem = CAPEX_ITEMS.find((it) => it.core);
+      const reqRows = CAPEX_REQUIRED.map((it) => `<li>${it.name} (required) — $${fmt(it.price)}${it.financeMo ? ` (or $${fmt(it.financeMo)}/mo x ${it.financeMonths})` : ''}</li>`).join('');
       const rigRow = selRig ? `<li>${rigById[selRig].name} (rig) — $${fmt(rigById[selRig].price)}</li>` : '';
-      const lineRows = [coreItem, ...CAPEX_ITEMS.filter((it) => validCapex.includes(it.id))]
+      const coreRow = `<li>${coreItem.name} — $${fmt(coreItem.price)}</li>`;
+      const addonRows = CAPEX_ITEMS.filter((it) => validCapex.includes(it.id) && !it.core)
         .map((it) => {
           const p = it.suite ? it.priceUp : it.price;
           return `<li>${it.name} — $${fmt(p)}${it.suite ? ' (or $' + fmt(it.priceMo) + '/mo)' : ''}</li>`;
-        }).join('') + rigRow;
+        }).join('');
+      const lineRows = coreRow + reqRows + addonRows + rigRow;
 
       const cHtml = `
         <div style="font-family:Arial,Helvetica,sans-serif;color:#142933;max-width:560px">

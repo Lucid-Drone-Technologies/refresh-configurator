@@ -732,7 +732,9 @@ export default function Configurator({ initialMode = 'refresh' }) {
             <p style={{ color: 'var(--grey)', fontSize: '14.5px', lineHeight: 1.6, margin: '10px 0 16px' }}>{displayInfo}</p>
             <div style={{ background: '#f0fbfd', border: '1px solid #cdeef4', borderRadius: 10, padding: '12px 16px', fontSize: '13.5px', color: 'var(--navy)' }}>
               {inCapex
-                ? (capexItem?.included
+                ? (capexItem?.required
+                    ? <>Required · <b>${fmt(capexItem.price)}</b> upfront or ${fmt(capexItem.financeMo)}/mo for {capexItem.financeMonths} months</>
+                    : capexItem?.included
                     ? <>Included with every purchase · <b>${fmt(capexItem.valueMo)}/mo</b> value</>
                     : capexItem?.core
                       ? <><b>${fmt(capexItem.price)}</b> · the foundation of every purchase build</>

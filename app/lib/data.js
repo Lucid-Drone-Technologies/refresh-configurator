@@ -13,7 +13,7 @@ export const ITEMS = [
   { id: 'mktg', name: 'Marketing Content Package', benefit: 'Launch with a brand and leads, not from scratch.', group: 'customers', desc: 'Professional video and content so a new operator has a brand and leads from day one.', info: 'Professional video and marketing content, ready on day one. This removes the second reason new operators fail: no brand and no way to find customers. Instead of building a presence from scratch, you launch with polished material you can put in front of leads immediately.', mo: 415, cashNum: 10000, cash: '$10,000' },
   { id: 'ojt', name: 'On-the-Job Training / Consultation', benefit: 'We work your first jobs with you so revenue starts now.', group: 'customers', desc: 'We work the first jobs alongside the crew so new revenue starts immediately.', info: 'Our team comes on site and works your first jobs alongside your crew. We don\'t just hand over the equipment and leave. We make sure revenue starts right away and your team is confident on the bigger-ticket work before they\'re on their own.', mo: 205, cashNum: 5000, cash: '$5,000' },
   { id: 'loaner', name: 'Loaner Fleet + Premium Support', benefit: '', desc: 'If it breaks, we swap it. The crew never stops earning.', info: 'Downtime never costs you a job. If your Sherpa goes down, we ship a loaner so your crew keeps working and keeps earning. For a business where every grounded day is lost revenue, this is the difference between a minor hiccup and a missed payroll.', mo: 495, cashNum: 500, cashMonthly: true, cash: '$500/mo' },
-  { id: 'diag', name: 'Remote Diagnostics', benefit: '', desc: 'We see problems before they do, and head off downtime before it costs a job.', info: 'We watch your Sherpa\'s health remotely and catch issues before you\'d ever notice them. Problems get flagged and handled before they become downtime, so the drone stays in the air and your schedule stays intact. Less guessing, fewer surprise repairs, more flying.', mo: 99, cashNum: 100, cashMonthly: true, cash: '$100/mo' },
+  { id: 'diag', name: 'Data Plan', benefit: '', desc: 'We see problems before they do, and head off downtime before it costs a job.', info: 'We watch your Sherpa\'s health remotely and catch issues before you\'d ever notice them. Problems get flagged and handled before they become downtime, so the drone stays in the air and your schedule stays intact. Less guessing, fewer surprise repairs, more flying.', mo: 99, cashNum: 100, cashMonthly: true, cash: '$100/mo' },
   { id: 'app', name: 'Lucid Bots Mobile App', benefit: '', desc: 'Quoting and job management in their pocket. Included free on every Refresh subscription.', info: 'Quoting and job management, right in your operator\'s pocket. Run the whole business from a phone, from day one. It\'s included free on every Refresh subscription and never a paid add-on, so every customer gets it standard.', mo: 0, cashNum: 160, cashMonthly: true, cash: '$160/mo', included: true },
   { id: 'ndaa', name: 'NDAA-Compliant Build', benefit: 'Built to NDAA-compliant specifications for federal, defense, and public-sector work.', desc: 'Built to NDAA-compliant specifications.', info: 'Configures your Sherpa to meet the component and sourcing rules of the National Defense Authorization Act, the federal standard that bars drones with Chinese-made critical parts. As of late 2025, federal agencies, contractors, and anyone using federal grant money are now restricted to compliant equipment, and enforcement is fully active. This build qualifies your Sherpa for that work. If you bid on government, defense, or publicly funded jobs, this is what gets you in the door. (Note: Sherpa is already U.S.-made in Charlotte, NC, which is a strong starting point for this.)', mo: 460, cashNum: 11040, cash: '$11,040', standalone: true },
 ];
@@ -46,8 +46,8 @@ export const CAPEX_SECTIONS = [
     items: [
       { id: 'flight', name: 'Sherpa Flight System', price: 45750, core: true,
         desc: 'Aircraft, batteries, chargers, cases, and field kit.', info: 'The complete standard package and the starting point of every purchase: the Sherpa aircraft, flight batteries, chargers, cases, and field accessories. Everything you need to fly, owned outright.' },
-      { id: 'diag', name: 'Remote Diagnostics', included: true, valueMo: 100,
-        desc: 'We monitor your Sherpa and head off downtime before it costs a job.', info: 'Included with every purchase. We watch your Sherpa\'s health remotely and flag issues before they become downtime, so the drone stays in the air and your schedule stays intact. A $100/mo value, included at no cost when you buy outright.' },
+      { id: 'diag', name: 'Data Plan', required: true, price: 2400, financeMo: 100, financeMonths: 24,
+        desc: 'We monitor your Sherpa and head off downtime before it costs a job.', info: 'Required with every purchase. We watch your Sherpa\'s health remotely and flag issues before they become downtime, so the drone stays in the air and your schedule stays intact. $2,400 upfront or $100/mo for 24 months.' },
     ],
   },
   {
@@ -114,11 +114,15 @@ export const RIGS = [
 export const RIG_IDS = RIGS.map((r) => r.id);
 export const rigById = Object.fromEntries(RIGS.map((r) => [r.id, r]));
 
-// Flat lookup of all priced CapEx items (excludes info-only rigs and always-included givens).
-export const CAPEX_ITEMS = CAPEX_SECTIONS.flatMap((s) => s.items).filter((it) => !it.infoOnly && !it.included);
+// Flat lookup of all priced, selectable CapEx items (excludes info-only rigs,
+// always-included givens, and required-but-not-selectable items like the Data Plan).
+export const CAPEX_ITEMS = CAPEX_SECTIONS.flatMap((s) => s.items).filter((it) => !it.infoOnly && !it.included && !it.required);
 export const capexItemById = Object.fromEntries(CAPEX_ITEMS.map((i) => [i.id, i]));
 
-// CapEx total: core drone + selected add-ons + a selected rig (pick-one).
+// Required CapEx items (always in the total, not selectable). E.g. the Data Plan.
+export const CAPEX_REQUIRED = CAPEX_SECTIONS.flatMap((s) => s.items).filter((it) => it.required);
+
+// CapEx total: core drone + required items + selected add-ons + a selected rig (pick-one).
 // Lucid Suite uses its up-front price.
 export function capexTotal(selectedIds) {
   let t = 0;
@@ -127,6 +131,8 @@ export function capexTotal(selectedIds) {
     if (!included) return;
     t += it.suite ? it.priceUp : it.price;
   });
+  // Required items are always in the total.
+  CAPEX_REQUIRED.forEach((it) => { t += it.price; });
   // Add the selected rig, if any (rigs live outside CAPEX_ITEMS).
   const rig = selectedIds.find((id) => rigById[id]);
   if (rig) t += rigById[rig].price;
