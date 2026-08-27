@@ -1,6 +1,6 @@
 import { generatePdf } from '../../lib/pdf.jsx';
 import { generateCapexPdf } from '../../lib/capexPdf.jsx';
-import { TIERS, itemById, configName, capexItemById } from '../../lib/data';
+import { TIERS, itemById, configName, capexItemById, rigById } from '../../lib/data';
 import { rateLimit, clientIp } from '../../lib/guard';
 
 export const runtime = 'nodejs';
@@ -17,12 +17,14 @@ export async function POST(req) {
 
     // CapEx (outright purchase) download
     if (body && body.mode === 'capex') {
-      const { capexSelected, taxState } = body;
+      const { capexSelected, rigTier, taxState } = body;
       if (!Array.isArray(capexSelected)) {
         return Response.json({ error: 'Invalid configuration.' }, { status: 400 });
       }
-      const validCapex = capexSelected.filter((id) => capexItemById[id] && !capexItemById[id].core);
-      const pdfBuffer = await generateCapexPdf({ selected: validCapex, taxState, contact: null });
+      const validAddons = capexSelected.filter((id) => capexItemById[id] && !capexItemById[id].core);
+      const selRig = capexSelected.find((id) => rigById[id]);
+      const validCapex = selRig ? [...validAddons, selRig] : validAddons;
+      const pdfBuffer = await generateCapexPdf({ selected: validCapex, rigTier, taxState, contact: null });
       return new Response(pdfBuffer, {
         status: 200,
         headers: {

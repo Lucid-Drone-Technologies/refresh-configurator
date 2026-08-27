@@ -1,13 +1,13 @@
 'use client';
 
-import { RIGS, fmt } from '../lib/data';
+import { RIGS, fmt, rigPrice } from '../lib/data';
 
 // Rigs section. Two modes:
 //  - Info-only (default, used on the Refresh page): reference cards linking to
 //    spec PDFs. Rigs are sold separately there, not part of the subscription.
 //  - Selectable (CapEx page): pick-one priced add-ons that fold into the package
 //    total, each still linking to its spec PDF.
-export default function RigsInfo({ selectable = false, selected, toggle, onInfo }) {
+export default function RigsInfo({ selectable = false, selected, toggle, onInfo, rigTier, setRigTier }) {
   if (!selectable) {
     return (
       <div className="rigs-info">
@@ -45,20 +45,34 @@ export default function RigsInfo({ selectable = false, selected, toggle, onInfo 
           add it to your package. Open a spec sheet for the full build on each.
         </div>
         <div className="rigs-info-fine">
-          Skid systems (Van, Truck Bed) mount into a vehicle you provide, the vehicle is not included.
+          Van and skid rigs mount into a vehicle you provide, the vehicle is not included.
           Trailer rigs include the trailer, the tow vehicle is not included.
         </div>
       </div>
       <div className="rigs-info-grid">
         {RIGS.map((rig) => {
           const on = isSel(rig.id);
+          const tierKey = (rigTier && rigTier[rig.id]) || (rig.tiers ? rig.tiers[0].key : null);
+          const price = rigPrice(rig, tierKey);
           return (
             <div key={rig.id} className={`rig-card rig-card-sel ${on ? 'rig-on' : ''}`}>
               <div className="rig-card-top">
                 <div className="rig-card-name">{rig.name}</div>
-                <div className="rig-card-price">${fmt(rig.price)}</div>
+                <div className="rig-card-price">${fmt(price)}</div>
               </div>
               <div className="rig-card-desc">{rig.desc}</div>
+              {rig.tiers && (
+                <select
+                  className="rig-tier-select"
+                  value={tierKey}
+                  onChange={(e) => setRigTier && setRigTier(rig.id, e.target.value)}
+                  aria-label={`${rig.name} package`}
+                >
+                  {rig.tiers.map((t) => (
+                    <option key={t.key} value={t.key}>{t.name} — ${fmt(t.price)}</option>
+                  ))}
+                </select>
+              )}
               <button
                 className={`btn-add rig-add ${on ? 'added' : ''}`}
                 onClick={() => toggle(rig.id)}

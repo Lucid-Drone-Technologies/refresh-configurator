@@ -2,7 +2,7 @@ import React from 'react';
 import fs from 'fs';
 import path from 'path';
 import { Document, Page, Text, View, Image, StyleSheet, Font, renderToBuffer } from '@react-pdf/renderer';
-import { CAPEX_ITEMS, capexItemById, capexTotal, fmt, taxRateFor, rigById, CAPEX_REQUIRED } from './data';
+import { CAPEX_ITEMS, capexItemById, capexTotal, fmt, taxRateFor, rigById, rigPrice, CAPEX_REQUIRED } from './data';
 
 // ---- Brand assets ----------------------------------------------------------
 const fontsDir = path.join(process.cwd(), 'public', 'fonts');
@@ -107,8 +107,8 @@ const styles = StyleSheet.create({
 });
 
 function CapexDoc({ data }) {
-  const { selected, taxState, contact } = data;
-  const total = capexTotal(selected);
+  const { selected, rigTier, taxState, contact } = data;
+  const total = capexTotal(selected, rigTier);
   const rate = taxRateFor(taxState);
   const withTax = Math.round(total * (1 + rate));
   const pctLabel = (rate * 100).toFixed(3).replace(/\.?0+$/, '');
@@ -119,6 +119,10 @@ function CapexDoc({ data }) {
   const addons = CAPEX_ITEMS.filter((it) => selected.includes(it.id) && !it.core);
   const rigId = selected.find((id) => rigById[id]);
   const rig = rigId ? rigById[rigId] : null;
+  const rigTierKey = rig && rig.tiers ? ((rigTier && rigTier[rigId]) || rig.tiers[0].key) : null;
+  const rigTierObj = rig && rig.tiers ? (rig.tiers.find((t) => t.key === rigTierKey) || rig.tiers[0]) : null;
+  const rigDisplayName = rigTierObj ? rigTierObj.name : (rig ? rig.name : '');
+  const rigDisplayPrice = rig ? rigPrice(rig, rigTierKey) : 0;
   const required = CAPEX_REQUIRED;
   const requiredSum = required.reduce((s, it) => s + it.price, 0);
 
@@ -207,8 +211,8 @@ function CapexDoc({ data }) {
           <View>
             <Text style={styles.sectionLabel}>RIG</Text>
             <View style={styles.row}>
-              <Text style={styles.rowName}>{rig.name}</Text>
-              <Text style={styles.rowPrice}>+${fmt(rig.price)}</Text>
+              <Text style={styles.rowName}>{rigDisplayName}</Text>
+              <Text style={styles.rowPrice}>+${fmt(rigDisplayPrice)}</Text>
             </View>
           </View>
         ) : null}

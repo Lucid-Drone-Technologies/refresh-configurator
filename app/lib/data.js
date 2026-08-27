@@ -106,13 +106,34 @@ export const CAPEX_SECTIONS = [
 export const RIGS = [
   { id: 'van',      name: 'Van Skid',        price: 27999, desc: 'Drop-in skid system for your cargo van.',  pdf: '/rigs/van.pdf' },
   { id: 'enclosed', name: 'Enclosed Trailer', price: 34199, desc: 'Fully enclosed, trailer included.',        pdf: '/rigs/enclosed.pdf' },
-  { id: 'open',     name: 'Open Trailer',     price: 32699, desc: 'Open-deck platform, trailer included.',    pdf: '/rigs/open.pdf' },
-  { id: 'truckbed', name: 'Truck Bed Skid',   price: 27999, desc: 'Built for a long truck bed.',              pdf: '/rigs/truckbed.pdf' },
+  { id: 'open',     name: 'Apex Van',         desc: 'Complete drone-support wash rig on a commercial van, RO/DI pure water and RigLink remote control.', pdf: '/rigs/open.pdf',
+    tiers: [
+      { key: 'base',  name: 'Apex Van',   price: 31499 },
+      { key: 'pro',   name: 'Apex Pro',   price: 33099 },
+      { key: 'force', name: 'Apex Force', price: 36299 },
+      { key: 'ultra', name: 'Apex Ultra', price: 37799 },
+    ] },
+  { id: 'truckbed', name: 'Peak Trailer',    desc: 'Complete drone-support wash rig on a road-ready enclosed trailer, RO/DI pure water and RigLink remote control.', pdf: '/rigs/truckbed.pdf',
+    tiers: [
+      { key: 'base',  name: 'Peak Trailer', price: 37499 },
+      { key: 'pro',   name: 'Peak Pro',     price: 39199 },
+      { key: 'force', name: 'Peak Force',   price: 42299 },
+      { key: 'ultra', name: 'Peak Ultra',   price: 43999 },
+    ] },
 ];
 
 // Rig ids, used to enforce pick-one behavior when rigs are CapEx add-ons.
 export const RIG_IDS = RIGS.map((r) => r.id);
 export const rigById = Object.fromEntries(RIGS.map((r) => [r.id, r]));
+// Default price for a rig: its own price, or its first tier's price if tiered.
+export function rigPrice(rig, tierKey) {
+  if (!rig) return 0;
+  if (rig.tiers) {
+    const t = rig.tiers.find((x) => x.key === tierKey) || rig.tiers[0];
+    return t.price;
+  }
+  return rig.price;
+}
 
 // Flat lookup of all priced, selectable CapEx items (excludes info-only rigs,
 // always-included givens, and required-but-not-selectable items like the Data Plan).
@@ -124,7 +145,7 @@ export const CAPEX_REQUIRED = CAPEX_SECTIONS.flatMap((s) => s.items).filter((it)
 
 // CapEx total: core drone + required items + selected add-ons + a selected rig (pick-one).
 // Lucid Suite uses its up-front price.
-export function capexTotal(selectedIds) {
+export function capexTotal(selectedIds, rigTier) {
   let t = 0;
   CAPEX_ITEMS.forEach((it) => {
     const included = it.core || selectedIds.includes(it.id);
@@ -133,9 +154,10 @@ export function capexTotal(selectedIds) {
   });
   // Required items are always in the total.
   CAPEX_REQUIRED.forEach((it) => { t += it.price; });
-  // Add the selected rig, if any (rigs live outside CAPEX_ITEMS).
-  const rig = selectedIds.find((id) => rigById[id]);
-  if (rig) t += rigById[rig].price;
+  // Add the selected rig, if any (rigs live outside CAPEX_ITEMS). Tiered rigs
+  // use the chosen tier's price (defaults to the base/first tier).
+  const rigId = selectedIds.find((id) => rigById[id]);
+  if (rigId) t += rigPrice(rigById[rigId], rigTier && rigTier[rigId]);
   return t;
 }
 

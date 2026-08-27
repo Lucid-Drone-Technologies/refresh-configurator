@@ -6,8 +6,8 @@ import RigsInfo from './RigsInfo';
 // CapEx (outright purchase) view. Mirrors the Sherpa Package one-pager and the
 // Refresh page's styling. The drone is the always-included foundation; everything
 // else is an optional add-on. Rigs are a separate informational section (RigsInfo).
-export default function CapexBody({ selected, toggle, taxState, setTaxState, onInfo, onLockIn, onCompare }) {
-  const total = capexTotal([...selected]);
+export default function CapexBody({ selected, toggle, rigTier, setRigTier, taxState, setTaxState, onInfo, onLockIn, onCompare }) {
+  const total = capexTotal([...selected], rigTier);
   const rate = taxRateFor(taxState);
   const withTax = Math.round(total * (1 + rate));
   const taxed = !!(taxState && rate > 0);
@@ -138,7 +138,7 @@ export default function CapexBody({ selected, toggle, taxState, setTaxState, onI
       </div>
 
       {/* Rigs as selectable pick-one add-ons on CapEx */}
-      <RigsInfo selectable selected={selected} toggle={toggle} onInfo={onInfo} />
+      <RigsInfo selectable selected={selected} toggle={toggle} onInfo={onInfo} rigTier={rigTier} setRigTier={setRigTier} />
     </div>
   );
 }

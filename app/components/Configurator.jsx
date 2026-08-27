@@ -101,6 +101,7 @@ async function submitToHubSpot({ name, email, phone, planName, addonNames, month
 export default function Configurator({ initialMode = 'refresh' }) {
   const [mode, setMode] = useState(initialMode); // 'refresh' | 'capex'
   const [capexSelected, setCapexSelected] = useState(() => new Set());
+  const [rigTier, setRigTier] = useState({}); // { rigId: tierKey } for tiered rigs
   const [tier, setTier] = useState('base');
   const [selected, setSelected] = useState(() => new Set(TIERS.base.items));
   const [taxState, setTaxState] = useState('');
@@ -211,7 +212,7 @@ export default function Configurator({ initialMode = 'refresh' }) {
     setDownloading(true);
     try {
       const body = mode === 'capex'
-        ? { mode: 'capex', capexSelected: [...capexSelected], taxState }
+        ? { mode: 'capex', capexSelected: [...capexSelected], rigTier, taxState }
         : { tier, selected: selectedIds, taxState };
       const res = await fetch('/api/pdf', {
         method: 'POST',
@@ -281,6 +282,7 @@ export default function Configurator({ initialMode = 'refresh' }) {
             phone: form.phone.trim(),
             mode: 'capex',
             capexSelected: capexIds,
+            rigTier,
             taxState,
             company_website: honeypot,
             elapsedMs: sendOpenedAt ? Date.now() - sendOpenedAt : 9999,
@@ -301,7 +303,7 @@ export default function Configurator({ initialMode = 'refresh' }) {
           window.dataLayer.push({
             event: 'capex_configure',
             addons: capexAddons,
-            total_purchase: capexTotal(capexIds),
+            total_purchase: capexTotal(capexIds, rigTier),
           });
         }
         setShowSend(false);
@@ -402,6 +404,8 @@ export default function Configurator({ initialMode = 'refresh' }) {
         <CapexBody
           selected={capexSelected}
           toggle={toggleCapex}
+          rigTier={rigTier}
+          setRigTier={(id, key) => setRigTier((prev) => ({ ...prev, [id]: key }))}
           taxState={taxState}
           setTaxState={setTaxState}
           onInfo={setInfoItem}
@@ -655,7 +659,7 @@ export default function Configurator({ initialMode = 'refresh' }) {
 
       {/* Compare modal — CapEx mode */}
       {showCompare && mode === 'capex' && (() => {
-        const outright = capexTotal([...capexSelected]);
+        const outright = capexTotal([...capexSelected], rigTier);
         const m = refreshMatch([...capexSelected], outright);
         return (
         <div className="modal-bg show" onClick={(e) => { if (e.target.classList.contains('modal-bg')) setShowCompare(false); }}>

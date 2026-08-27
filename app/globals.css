@@ -45,6 +45,8 @@
   .rig-add:hover{background:#eafafd}
   .rig-add svg{width:14px;height:14px}
   .rig-add.added{background:var(--cyan);color:var(--navy);border-color:var(--cyan)}
+  .rig-tier-select{width:100%;font-family:'Inter';font-size:13px;color:var(--navy);padding:8px 10px;border:1.5px solid #d8dee2;border-radius:9px;background:#fff;margin-bottom:10px;cursor:pointer}
+  .rig-tier-select:focus{outline:none;border-color:var(--cyan)}
   @media(max-width:900px){.rigs-info-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:520px){.rigs-info-grid{grid-template-columns:1fr}}
 
