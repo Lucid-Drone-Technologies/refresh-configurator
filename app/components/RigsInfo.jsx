@@ -18,18 +18,23 @@ export default function RigsInfo({ selectable = false, selected, toggle, onInfo,
             spec sheets to find the setup that fits how you work, then talk to your rep.
           </div>
         </div>
-        <div className="rigs-info-grid">
-          {RIGS.map((rig) => (
-            <a key={rig.id} className="rig-card" href={rig.pdf} target="_blank" rel="noopener noreferrer">
-              <div className="rig-card-name">{rig.name}</div>
-              <div className="rig-card-desc">{rig.desc}</div>
-              <div className="rig-card-link">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
-                View spec sheet
-              </div>
-            </a>
-          ))}
-        </div>
+        {[...new Set(RIGS.map((r) => r.group || ''))].map((groupName) => (
+          <div className="rig-group" key={groupName || 'ungrouped'}>
+            {groupName && <div className="rig-group-label">{groupName}</div>}
+            <div className="rigs-info-grid">
+              {RIGS.filter((r) => (r.group || '') === groupName).map((rig) => (
+                <a key={rig.id} className="rig-card" href={rig.pdf} target="_blank" rel="noopener noreferrer">
+                  <div className="rig-card-name">{rig.name}</div>
+                  <div className="rig-card-desc">{rig.desc}</div>
+                  <div className="rig-card-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
+                    View spec sheet
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -49,49 +54,41 @@ export default function RigsInfo({ selectable = false, selected, toggle, onInfo,
           Trailer rigs include the trailer, the tow vehicle is not included.
         </div>
       </div>
-      <div className="rigs-info-grid">
-        {RIGS.map((rig) => {
-          const on = isSel(rig.id);
-          const tierKey = (rigTier && rigTier[rig.id]) || (rig.tiers ? rig.tiers[0].key : null);
-          const price = rigPrice(rig, tierKey);
-          return (
-            <div key={rig.id} className={`rig-card rig-card-sel ${on ? 'rig-on' : ''}`}>
-              <div className="rig-card-top">
-                <div className="rig-card-name">{rig.name}</div>
-                <div className="rig-card-price">${fmt(price)}</div>
-              </div>
-              <div className="rig-card-desc">{rig.desc}</div>
-              {rig.tiers && (
-                <select
-                  className="rig-tier-select"
-                  value={tierKey}
-                  onChange={(e) => setRigTier && setRigTier(rig.id, e.target.value)}
-                  aria-label={`${rig.name} package`}
-                >
-                  {rig.tiers.map((t) => (
-                    <option key={t.key} value={t.key}>{t.name} — ${fmt(t.price)}</option>
-                  ))}
-                </select>
-              )}
-              <button
-                className={`btn-add rig-add ${on ? 'added' : ''}`}
-                onClick={() => toggle(rig.id)}
-                aria-pressed={on}
-              >
-                {on ? (
-                  <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>Added · remove</>
-                ) : (
-                  <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>Add</>
-                )}
-              </button>
-              <a className="rig-card-link" href={rig.pdf} target="_blank" rel="noopener noreferrer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
-                View spec sheet
-              </a>
-            </div>
-          );
-        })}
-      </div>
+      {[...new Set(RIGS.map((r) => r.group || ''))].map((groupName) => (
+        <div className="rig-group" key={groupName || 'ungrouped'}>
+          {groupName && <div className="rig-group-label">{groupName}</div>}
+          <div className="rigs-info-grid">
+            {RIGS.filter((r) => (r.group || '') === groupName).map((rig) => {
+              const on = isSel(rig.id);
+              const price = rigPrice(rig);
+              return (
+                <div key={rig.id} className={`rig-card rig-card-sel ${on ? 'rig-on' : ''}`}>
+                  <div className="rig-card-top">
+                    <div className="rig-card-name">{rig.name}</div>
+                    <div className="rig-card-price">${fmt(price)}</div>
+                  </div>
+                  <div className="rig-card-desc">{rig.desc}</div>
+                  <button
+                    className={`btn-add rig-add ${on ? 'added' : ''}`}
+                    onClick={() => toggle(rig.id)}
+                    aria-pressed={on}
+                  >
+                    {on ? (
+                      <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>Added · remove</>
+                    ) : (
+                      <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>Add</>
+                    )}
+                  </button>
+                  <a className="rig-card-link" href={rig.pdf} target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
+                    View spec sheet
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

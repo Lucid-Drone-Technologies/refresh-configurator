@@ -104,22 +104,10 @@ export const CAPEX_SECTIONS = [
 // informational section on both the Refresh and CapEx pages, each linking to a
 // spec PDF. PDFs live in /public/rigs/{id}.pdf (uploaded separately).
 export const RIGS = [
-  { id: 'van',      name: 'Van Skid',        price: 27999, desc: 'Drop-in skid system for your cargo van.',  pdf: '/rigs/van.pdf' },
-  { id: 'enclosed', name: 'Enclosed Trailer', price: 34199, desc: 'Fully enclosed, trailer included.',        pdf: '/rigs/enclosed.pdf' },
-  { id: 'open',     name: 'Apex Van',         desc: 'Complete drone-support wash rig on a commercial van, RO/DI pure water and RigLink remote control.', pdf: '/rigs/open.pdf',
-    tiers: [
-      { key: 'base',  name: 'Apex Van',   price: 31499 },
-      { key: 'pro',   name: 'Apex Pro',   price: 33099 },
-      { key: 'force', name: 'Apex Force', price: 36299 },
-      { key: 'ultra', name: 'Apex Ultra', price: 37799 },
-    ] },
-  { id: 'truckbed', name: 'Peak Trailer',    desc: 'Complete drone-support wash rig on a road-ready enclosed trailer, RO/DI pure water and RigLink remote control.', pdf: '/rigs/truckbed.pdf',
-    tiers: [
-      { key: 'base',  name: 'Peak Trailer', price: 37499 },
-      { key: 'pro',   name: 'Peak Pro',     price: 39199 },
-      { key: 'force', name: 'Peak Force',   price: 42299 },
-      { key: 'ultra', name: 'Peak Ultra',   price: 43999 },
-    ] },
+  { id: 'van',      name: 'Core Van',        group: 'Van rigs',     price: 27999, desc: 'Drop-in skid system for your cargo van.',  pdf: '/rigs/van.pdf' },
+  { id: 'open',     name: 'Apex Pro Van',    group: 'Van rigs',     price: 33099, desc: 'Complete drone-support wash rig on a commercial van, RO/DI pure water and RigLink remote control.', pdf: '/rigs/open.pdf' },
+  { id: 'enclosed', name: 'Ridge Trailer',   group: 'Trailer rigs', price: 34199, desc: 'Fully enclosed, trailer included.',        pdf: '/rigs/enclosed.pdf' },
+  { id: 'truckbed', name: 'Peak Pro Trailer', group: 'Trailer rigs', price: 39199, desc: 'Complete drone-support wash rig on a road-ready enclosed trailer, RO/DI pure water and RigLink remote control.', pdf: '/rigs/truckbed.pdf' },
 ];
 
 // Rig ids, used to enforce pick-one behavior when rigs are CapEx add-ons.
