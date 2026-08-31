@@ -4,7 +4,7 @@ import path from 'path';
 import { Document, Page, Text, View, Image, StyleSheet, Font, renderToBuffer } from '@react-pdf/renderer';
 import {
   TIERS, ITEMS, fmt, computeTotal, configName,
-  taxRateFor, STATE_NAMES, TERM,
+  taxRateFor, STATE_NAMES, TERM, REFRESH_PROCESSING_FEE,
 } from './data';
 
 // ---- Brand assets ----------------------------------------------------------
@@ -219,6 +219,11 @@ function RefreshDoc({ data }) {
               <Text style={styles.grandSub}>24-month subscription  ·  <Text style={styles.goldAccent}>$0 down</Text></Text>
             </View>
             <Text style={styles.grandVal}>${fmt(bigNum)}<Text style={{ fontSize: 11 }}>/mo</Text></Text>
+          </View>
+
+          <View style={[styles.totalRow, { marginTop: 8 }]}>
+            <Text style={styles.totalLabelStrong}>One-time processing fee</Text>
+            <Text style={styles.totalValStrong}>${fmt(REFRESH_PROCESSING_FEE)}</Text>
           </View>
         </View>
 

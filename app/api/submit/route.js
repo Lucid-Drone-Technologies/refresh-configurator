@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import { generatePdf } from '../../lib/pdf.jsx';
 import { generateCapexPdf } from '../../lib/capexPdf.jsx';
 import {
-  TIERS, ITEMS, itemById, fmt, computeTotal, configName,
+  TIERS, ITEMS, itemById, fmt, computeTotal, configName, REFRESH_PROCESSING_FEE,
   taxRateFor, STATE_NAMES, CAPEX_ITEMS, capexItemById, capexTotal, rigById, CAPEX_REQUIRED,
 } from '../../lib/data';
 import { rateLimit, clientIp, looksLikeBot } from '../../lib/guard';
@@ -170,6 +170,7 @@ export async function POST(req) {
         <table style="font-size:14px;margin-bottom:6px">
           <tr><td style="padding:2px 16px 2px 0;color:#606060">Package</td><td>${cfg}</td></tr>
           <tr><td style="padding:2px 16px 2px 0;color:#606060">Monthly (before tax)</td><td>$${fmt(total)}/mo</td></tr>
+          <tr><td style="padding:2px 16px 2px 0;color:#606060">One-time processing fee</td><td>$${fmt(REFRESH_PROCESSING_FEE)}</td></tr>
           <tr><td style="padding:2px 16px 2px 0;color:#606060">Customer state</td><td>${stateName}</td></tr>
           <tr><td style="padding:2px 16px 2px 0;color:#606060">Est. with tax</td><td>${estLine}</td></tr>
         </table>

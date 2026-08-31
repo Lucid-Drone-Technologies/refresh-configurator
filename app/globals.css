@@ -199,6 +199,9 @@
   .priceblock .amt.flash{color:var(--cyan)}
   .priceblock .per{font-family:'Poppins';font-size:16px;color:#9fc4cf;font-weight:500;margin-bottom:8px}
   .terms{font-family:'Roboto';font-size:12.5px;color:#9fc4cf;letter-spacing:.04em;margin-bottom:14px}
+  .fee-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;margin-bottom:6px;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+  .fee-label{font-family:'Roboto';font-size:13px;color:#cfe6ec}
+  .fee-val{font-family:'Roboto';font-weight:700;font-size:15px;color:#fff}
   .tax-row{margin-bottom:10px}
   .tax-row select{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;font-family:'Inter';font-size:13px;padding:9px 11px;border-radius:9px;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%239fc4cf' stroke-width='2'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}
   .tax-row select option{color:#142933}

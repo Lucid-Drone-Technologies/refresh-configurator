@@ -3,6 +3,7 @@
 
 export const TERM = 24;
 export const FIN_FACTOR = 1.1298; // 12% APR, 24mo total paid per $ financed
+export const REFRESH_PROCESSING_FEE = 2520; // one-time processing fee on every Refresh deal (untaxed)
 
 export const ITEMS = [
   { id: 'flight', name: 'Sherpa Flight System', benefit: '', desc: 'Drone, 8 batteries, 2 chargers. The base on every tier, sized to keep a crew working between battery swaps.', info: 'The core of every Refresh subscription: the drone, eight batteries, and two chargers. The eight-battery, two-charger setup is the point. Your crew keeps one set flying while the other recharges, so the drone never sits idle waiting on a swap. This is the machine and the uptime, with nothing else to buy to get started.', mo: 1887, cashNum: 45750, cash: '$45,750', base: true },

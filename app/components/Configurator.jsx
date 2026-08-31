@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   TIERS, ITEMS, GROUPS, itemById, STATE_NAMES, STATE_TAX,
-  fmt, computeTotal, cashTotal, financeTotal, configName, taxRateFor, TERM,
+  fmt, computeTotal, cashTotal, financeTotal, configName, taxRateFor, TERM, REFRESH_PROCESSING_FEE,
   CAPEX_ITEMS, capexItemById, capexTotal, refreshMatch, RIG_IDS, rigById,
 } from '../lib/data';
 import CapexBody from './CapexBody';
@@ -566,6 +566,11 @@ export default function Configurator({ initialMode = 'refresh' }) {
                 <span className="per">/mo</span>
               </div>
               <div className="terms"><b>$0 down</b> · 24-month subscription</div>
+
+              <div className="fee-row">
+                <span className="fee-label">One-time processing fee</span>
+                <span className="fee-val">${fmt(REFRESH_PROCESSING_FEE)}</span>
+              </div>
 
               <div className="tax-row">
                 <select value={taxState} aria-label="Select state for estimated tax" onChange={(e) => { setTaxState(e.target.value); doFlash(); }}>
