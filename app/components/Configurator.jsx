@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   TIERS, ITEMS, GROUPS, itemById, STATE_NAMES, STATE_TAX,
-  fmt, computeTotal, cashTotal, financeTotal, configName, taxRateFor, TERM, REFRESH_PROCESSING_FEE,
+  fmt, computeTotal, cashTotal, financeTotal, configName, taxRateFor, TERM, REFRESH_FEE_MO,
   CAPEX_ITEMS, capexItemById, capexTotal, refreshMatch, RIG_IDS, rigById,
 } from '../lib/data';
 import CapexBody from './CapexBody';
@@ -182,17 +182,21 @@ export default function Configurator({ initialMode = 'refresh' }) {
   };
 
   const cfgName = configName(tier, selectedIds);
-  const refresh24 = total * TERM;
+  const feeMo = REFRESH_FEE_MO; // untaxed processing fee, spread monthly
+  // 24-month totals include the fee across the full term.
+  const refresh24 = (total + feeMo) * TERM;
   const cash = cashTotal(selectedIds);
   const fin = financeTotal(selectedIds);
   const pctCash = cash > refresh24 ? Math.round(((cash - refresh24) / cash) * 100) : 0;
   const pctFin = fin > refresh24 ? Math.round(((fin - refresh24) / fin) * 100) : 0;
 
-  const withTax = Math.round(total * (1 + rate));
+  // Tax applies to the equipment monthly only; the fee is added untaxed on top.
+  const equipWithTax = Math.round(total * (1 + rate));
+  const withTax = equipWithTax + feeMo;
   const pctLabel = (rate * 100).toFixed(3).replace(/\.?0+$/, '');
 
-  // Big number + label logic
-  let bigNumber = total;
+  // Big number + label logic. Displayed monthly always includes the fee.
+  let bigNumber = total + feeMo;
   let priceLabel = 'Monthly subscription';
   if (taxState && rate > 0) {
     bigNumber = withTax;
@@ -252,7 +256,7 @@ export default function Configurator({ initialMode = 'refresh' }) {
         plan: TIERS[tier].name,
         plan_price: TIERS[tier].priceNum,
         addons: addonNames,
-        total_monthly: total,
+        total_monthly: total + feeMo,
       });
     }
     setFormErr('');
@@ -338,7 +342,7 @@ export default function Configurator({ initialMode = 'refresh' }) {
         phone: form.phone.trim(),
         planName: TIERS[tier].name,
         addonNames,
-        monthlyTotal: total,
+        monthlyTotal: total + feeMo,
       });
       // Conversion event for Google Ads / GTM (spec from marketing).
       if (typeof window !== 'undefined') {
@@ -348,7 +352,7 @@ export default function Configurator({ initialMode = 'refresh' }) {
           plan: TIERS[tier].name,
           plan_price: TIERS[tier].priceNum,
           addons: addonNames,
-          total_monthly: total,
+          total_monthly: total + feeMo,
         });
       }
       setShowSend(false);
@@ -567,11 +571,6 @@ export default function Configurator({ initialMode = 'refresh' }) {
               </div>
               <div className="terms"><b>$0 down</b> · 24-month subscription</div>
 
-              <div className="fee-row">
-                <span className="fee-label">One-time processing fee</span>
-                <span className="fee-val">${fmt(REFRESH_PROCESSING_FEE)}</span>
-              </div>
-
               <div className="tax-row">
                 <select value={taxState} aria-label="Select state for estimated tax" onChange={(e) => { setTaxState(e.target.value); doFlash(); }}>
                   <option value="">Add state for estimated tax</option>
@@ -599,6 +598,7 @@ export default function Configurator({ initialMode = 'refresh' }) {
                 {ITEMS.filter((it) => selected.has(it.id) && !isLocked(it.id) && !it.included).map((it) => (
                   <div className="li" key={it.id}><span className="n">{it.name}</span><span className="v">${fmt(it.mo)}/mo</span></div>
                 ))}
+                <div className="li"><span className="n">Processing fee</span><span className="v">${fmt(feeMo)}/mo</span></div>
               </div>
 
               <button className="btn btn-send" onClick={openSend}>

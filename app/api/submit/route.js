@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import { generatePdf } from '../../lib/pdf.jsx';
 import { generateCapexPdf } from '../../lib/capexPdf.jsx';
 import {
-  TIERS, ITEMS, itemById, fmt, computeTotal, configName, REFRESH_PROCESSING_FEE,
+  TIERS, ITEMS, itemById, fmt, computeTotal, configName, REFRESH_FEE_MO,
   taxRateFor, STATE_NAMES, CAPEX_ITEMS, capexItemById, capexTotal, rigById, CAPEX_REQUIRED,
 } from '../../lib/data';
 import { rateLimit, clientIp, looksLikeBot } from '../../lib/guard';
@@ -130,13 +130,15 @@ export async function POST(req) {
     TIERS[tier].items.forEach((id) => { if (!validIds.includes(id)) validIds.push(id); });
 
     const total = computeTotal(tier, validIds);
+    const feeMo = REFRESH_FEE_MO;
     const rate = taxRateFor(taxState);
     const cfg = configName(tier, validIds);
-    const withTax = Math.round(total * (1 + rate));
+    const withTax = Math.round(total * (1 + rate)) + feeMo; // fee untaxed
+    const displayMo = total + feeMo;
     const stateName = taxState && STATE_NAMES[taxState] ? STATE_NAMES[taxState] : 'Not selected';
     const estLine = taxState
       ? (rate > 0
-          ? `$${fmt(withTax)}/mo (${(rate * 100).toFixed(3).replace(/\.?0+$/, '')}% ${taxState} state rate, local taxes not included)`
+          ? `$${fmt(withTax)}/mo (${(rate * 100).toFixed(3).replace(/\.?0+$/, '')}% ${taxState} state rate on equipment, fee not taxed, local taxes not included)`
           : 'No state sales tax')
       : 'Not selected';
 
@@ -157,7 +159,7 @@ export async function POST(req) {
           <span style="color:#9fc4cf;font-size:11px;letter-spacing:1px;float:right;margin-top:4px">NEW REFRESH SUBMISSION</span>
         </div>
         <h2 style="margin:0 0 2px">${cfg}</h2>
-        <p style="color:#606060;margin:0 0 18px">$${fmt(total)}/mo before tax · 24-month subscription · $0 down</p>
+        <p style="color:#606060;margin:0 0 18px">$${fmt(displayMo)}/mo (incl. processing fee) · 24-month subscription · $0 down</p>
 
         <h3 style="margin:0 0 6px;font-size:13px;color:#1aa3b8;text-transform:uppercase;letter-spacing:1px">Contact</h3>
         <table style="font-size:14px;margin-bottom:18px">
@@ -169,8 +171,9 @@ export async function POST(req) {
         <h3 style="margin:0 0 6px;font-size:13px;color:#1aa3b8;text-transform:uppercase;letter-spacing:1px">Configuration</h3>
         <table style="font-size:14px;margin-bottom:6px">
           <tr><td style="padding:2px 16px 2px 0;color:#606060">Package</td><td>${cfg}</td></tr>
-          <tr><td style="padding:2px 16px 2px 0;color:#606060">Monthly (before tax)</td><td>$${fmt(total)}/mo</td></tr>
-          <tr><td style="padding:2px 16px 2px 0;color:#606060">One-time processing fee</td><td>$${fmt(REFRESH_PROCESSING_FEE)}</td></tr>
+          <tr><td style="padding:2px 16px 2px 0;color:#606060">Equipment (before tax)</td><td>$${fmt(total)}/mo</td></tr>
+          <tr><td style="padding:2px 16px 2px 0;color:#606060">Processing fee (not taxed)</td><td>$${fmt(feeMo)}/mo</td></tr>
+          <tr><td style="padding:2px 16px 2px 0;color:#606060">Total monthly (before tax)</td><td><b>$${fmt(displayMo)}/mo</b></td></tr>
           <tr><td style="padding:2px 16px 2px 0;color:#606060">Customer state</td><td>${stateName}</td></tr>
           <tr><td style="padding:2px 16px 2px 0;color:#606060">Est. with tax</td><td>${estLine}</td></tr>
         </table>
@@ -181,7 +184,7 @@ export async function POST(req) {
       </div>`;
 
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const subject = `New Refresh build: ${contact.name} — ${cfg} ($${fmt(total)}/mo)`;
+    const subject = `New Refresh build: ${contact.name} — ${cfg} ($${fmt(displayMo)}/mo)`;
 
     const { error } = await resend.emails.send({
       from: FROM,

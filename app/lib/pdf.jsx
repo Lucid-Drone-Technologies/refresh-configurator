@@ -4,7 +4,7 @@ import path from 'path';
 import { Document, Page, Text, View, Image, StyleSheet, Font, renderToBuffer } from '@react-pdf/renderer';
 import {
   TIERS, ITEMS, fmt, computeTotal, configName,
-  taxRateFor, STATE_NAMES, TERM, REFRESH_PROCESSING_FEE,
+  taxRateFor, STATE_NAMES, TERM, REFRESH_FEE_MO,
 } from './data';
 
 // ---- Brand assets ----------------------------------------------------------
@@ -114,15 +114,17 @@ const styles = StyleSheet.create({
 function RefreshDoc({ data }) {
   const { tier, selected, taxState, contact } = data;
   const total = computeTotal(tier, selected);
+  const feeMo = REFRESH_FEE_MO;
   const rate = taxRateFor(taxState);
-  const withTax = Math.round(total * (1 + rate));
+  const equipWithTax = Math.round(total * (1 + rate));
+  const withTax = equipWithTax + feeMo; // fee untaxed
   const pctLabel = (rate * 100).toFixed(3).replace(/\.?0+$/, '');
   const taxed = !!(taxState && rate > 0);
   const cfg = configName(tier, selected);
 
   const baseItems = ITEMS.filter((it) => TIERS[tier].items.includes(it.id));
   const addedItems = ITEMS.filter((it) => selected.includes(it.id) && !TIERS[tier].items.includes(it.id));
-  const bigNum = taxed ? withTax : total;
+  const bigNum = (taxed ? withTax : total + feeMo);
 
   return (
     <Document>
@@ -149,7 +151,7 @@ function RefreshDoc({ data }) {
               {taxed ? `EST. MONTHLY WITH ${pctLabel}% ${taxState} TAX` : 'MONTHLY SUBSCRIPTION'}
             </Text>
             <Text style={styles.bigPrice}>${fmt(bigNum)}<Text style={styles.bigPriceSmall}>/mo</Text></Text>
-            {taxed ? <Text style={styles.preTax}>${fmt(total)}/mo before tax</Text> : null}
+            {taxed ? <Text style={styles.preTax}>${fmt(total + feeMo)}/mo before tax</Text> : null}
           </View>
         </View>
 
@@ -209,9 +211,13 @@ function RefreshDoc({ data }) {
           {taxed ? (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Estimated {pctLabel}% {taxState} state tax</Text>
-              <Text style={styles.totalVal}>+${fmt(withTax - total)}/mo</Text>
+              <Text style={styles.totalVal}>+${fmt(equipWithTax - total)}/mo</Text>
             </View>
           ) : null}
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Processing fee (not taxed)</Text>
+            <Text style={styles.totalVal}>+${fmt(feeMo)}/mo</Text>
+          </View>
 
           <View style={styles.grandRow}>
             <View>
@@ -219,11 +225,6 @@ function RefreshDoc({ data }) {
               <Text style={styles.grandSub}>24-month subscription  ·  <Text style={styles.goldAccent}>$0 down</Text></Text>
             </View>
             <Text style={styles.grandVal}>${fmt(bigNum)}<Text style={{ fontSize: 11 }}>/mo</Text></Text>
-          </View>
-
-          <View style={[styles.totalRow, { marginTop: 8 }]}>
-            <Text style={styles.totalLabelStrong}>One-time processing fee</Text>
-            <Text style={styles.totalValStrong}>${fmt(REFRESH_PROCESSING_FEE)}</Text>
           </View>
         </View>
 
