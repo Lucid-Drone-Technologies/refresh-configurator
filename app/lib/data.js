@@ -80,8 +80,6 @@ export const CAPEX_SECTIONS = [
         desc: 'Three days of in-person training at our Charlotte HQ.', info: 'Exterior Cleaning 101: three days of hands-on, in-person training at our Charlotte, NC headquarters to get your crew confident and operating.' },
       { id: 'ojt', name: 'First Job Consultation', price: 5000,
         desc: 'Our team coaches your crew through your first jobs on site.', info: 'Our team comes to you, advising on your first jobs and coaching your crew through every step in the field so revenue starts right away.' },
-      { id: 'train1', name: '1-Day HQ Training', price: 1500,
-        desc: 'One day in person at our Charlotte HQ for one or two pilots.', info: 'One day in person at our Charlotte HQ for one or two pilots. Bringing three or more pilots? It expands to two days at $2,500.' },
     ],
   },
   {
@@ -154,7 +152,7 @@ export function capexTotal(selectedIds, rigTier) {
 // in, and surfaces any add-ons they configured that sit beyond that tier so the
 // modal can note they carry over. Returns:
 //   { tier, includedNames, extras (CapEx items beyond the tier), outrightNow }
-const CAPEX_TRAINING = ['train1', 'train3', 'ojt'];
+const CAPEX_TRAINING = ['train3', 'ojt'];
 // CapEx add-on ids that have a Refresh monthly equivalent (for the "extras" note).
 const CAPEX_TO_REFRESH = { window: 'window', shield: 'shield', tether: 'tether', mktg: 'mktg', ndaa: 'ndaa' };
 export function refreshMatch(selectedIds, outrightNow) {
