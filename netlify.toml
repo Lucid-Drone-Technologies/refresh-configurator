@@ -2,5 +2,18 @@
   command = "next build"
   publish = ".next"
 
+# pricing.lucidbots.com now lives at https://www.lucidbots.com/pricing.
+# Netlify matches this rule before the redirects @netlify/plugin-nextjs
+# appends, so the Next.js app never runs. force overrides prerendered
+# pages (including / and /refresh) and files in public/. Query strings
+# are forwarded because the target has none of its own. The target is a
+# different host, so this cannot loop with the in-app redirect('/refresh').
+# Delete this block to serve the app again.
+[[redirects]]
+  from = "/*"
+  to = "https://www.lucidbots.com/pricing"
+  status = 301
+  force = true
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
