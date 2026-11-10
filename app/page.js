@@ -1,7 +1,17 @@
-import { redirect } from 'next/navigation';
+export const metadata = {
+  title: 'Lucid Bots Pricing',
+};
 
-// Root always routes to the Refresh slug so inbound URLs are never blank.
-// Refresh and CapEx each have their own slug for intent-based lead routing.
 export default function Page() {
-  redirect('/refresh');
+  return (
+    <html>
+      <head>
+        <meta httpEquiv="refresh" content="0; url=/refresh/" />
+      </head>
+      <body>
+        <p>Redirecting to <a href="/refresh/">pricing configurator</a>...</p>
+      </body>
+    </html>
+  );
 }
+
